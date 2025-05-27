@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,7 +17,8 @@ const CustomerRegistration = () => {
     address: '',
     occupation: '',
     distribution: '',
-    salesAgent: 'Admin User', // ST-204: Auto-assigned based on logged-in user
+    salesAgent: '', // ST-204: Updated to be selectable
+    assignedDoctor: '', // New required field
     prescription: {
       od: '',
       os: '',
@@ -43,6 +43,9 @@ const CustomerRegistration = () => {
   });
 
   const { toast } = useToast();
+
+  // Sales Agent options
+  const salesAgents = ['Ace', 'Yhel', 'Jil', 'Mel', 'Jeselle', 'Eric', 'John'];
 
   // ST-206: Grade Type options
   const gradeTypes = [
@@ -80,12 +83,29 @@ const CustomerRegistration = () => {
 
   const paymentModes = ['Cash', 'Gcash', 'Maya', 'Bank Transfer', 'Credit Card'];
 
+  // Handle prescription input (numerical only)
+  const handlePrescriptionChange = (field: string, value: string) => {
+    // Allow numbers, decimals, negative signs, and common prescription symbols
+    const prescriptionRegex = /^[-+]?[0-9]*\.?[0-9]*$/;
+    if (prescriptionRegex.test(value) || value === '') {
+      setFormData({
+        ...formData,
+        prescription: { ...formData.prescription, [field]: value }
+      });
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // ST-201: Validation for required fields
-    const requiredFields = ['name', 'contactNumber', 'email', 'age', 'address'];
-    const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData]);
+    // ST-201: Validation for required fields including new Assigned Doctor field
+    const requiredFields = ['name', 'contactNumber', 'email', 'age', 'address', 'assignedDoctor', 'salesAgent'];
+    const missingFields = requiredFields.filter(field => {
+      if (field === 'assignedDoctor' || field === 'salesAgent') {
+        return !formData[field as keyof typeof formData];
+      }
+      return !formData[field as keyof typeof formData];
+    });
     
     if (missingFields.length > 0) {
       toast({
@@ -133,7 +153,8 @@ const CustomerRegistration = () => {
       address: '',
       occupation: '',
       distribution: '',
-      salesAgent: 'Admin User',
+      salesAgent: '',
+      assignedDoctor: '',
       prescription: { od: '', os: '', ou: '', pd: '', add: '' },
       gradeType: '',
       lensType: '',
@@ -215,7 +236,7 @@ const CustomerRegistration = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* ST-202: Optional Occupation */}
                 <div className="space-y-2">
                   <Label htmlFor="occupation">Occupation</Label>
@@ -241,31 +262,48 @@ const CustomerRegistration = () => {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* New Required Field: Assigned Doctor */}
+                <div className="space-y-2">
+                  <Label htmlFor="assignedDoctor">Assigned Doctor *</Label>
+                  <Input
+                    id="assignedDoctor"
+                    value={formData.assignedDoctor}
+                    onChange={(e) => setFormData({...formData, assignedDoctor: e.target.value})}
+                    placeholder="Enter assigned doctor name"
+                    required
+                  />
+                </div>
               </div>
 
-              {/* ST-204: Sales Agent */}
+              {/* ST-204: Sales Agent - Updated to dropdown */}
               <div className="space-y-2">
-                <Label htmlFor="salesAgent">Sales Agent</Label>
-                <Input
-                  id="salesAgent"
-                  value={formData.salesAgent}
-                  readOnly
-                  className="bg-gray-100"
-                />
+                <Label htmlFor="salesAgent">Sales Agent *</Label>
+                <Select value={formData.salesAgent} onValueChange={(value) => setFormData({...formData, salesAgent: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select sales agent" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {salesAgents.map((agent) => (
+                      <SelectItem key={agent} value={agent}>{agent}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
-            {/* ST-205: Prescription Information */}
+            {/* ST-205: Prescription Information - Updated for numerical only */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-800">Prescription Details</h3>
+              <h3 className="text-lg font-semibold text-gray-800">Prescription Details (Numerical Only)</h3>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="od">OD (Right Eye)</Label>
                   <Input
                     id="od"
                     value={formData.prescription.od}
-                    onChange={(e) => setFormData({...formData, prescription: {...formData.prescription, od: e.target.value}})}
-                    placeholder="OD"
+                    onChange={(e) => handlePrescriptionChange('od', e.target.value)}
+                    placeholder="0.00"
+                    pattern="^[-+]?[0-9]*\.?[0-9]*$"
                   />
                 </div>
                 <div className="space-y-2">
@@ -273,8 +311,9 @@ const CustomerRegistration = () => {
                   <Input
                     id="os"
                     value={formData.prescription.os}
-                    onChange={(e) => setFormData({...formData, prescription: {...formData.prescription, os: e.target.value}})}
-                    placeholder="OS"
+                    onChange={(e) => handlePrescriptionChange('os', e.target.value)}
+                    placeholder="0.00"
+                    pattern="^[-+]?[0-9]*\.?[0-9]*$"
                   />
                 </div>
                 <div className="space-y-2">
@@ -282,8 +321,9 @@ const CustomerRegistration = () => {
                   <Input
                     id="ou"
                     value={formData.prescription.ou}
-                    onChange={(e) => setFormData({...formData, prescription: {...formData.prescription, ou: e.target.value}})}
-                    placeholder="OU"
+                    onChange={(e) => handlePrescriptionChange('ou', e.target.value)}
+                    placeholder="0.00"
+                    pattern="^[-+]?[0-9]*\.?[0-9]*$"
                   />
                 </div>
                 <div className="space-y-2">
@@ -291,8 +331,9 @@ const CustomerRegistration = () => {
                   <Input
                     id="pd"
                     value={formData.prescription.pd}
-                    onChange={(e) => setFormData({...formData, prescription: {...formData.prescription, pd: e.target.value}})}
-                    placeholder="PD"
+                    onChange={(e) => handlePrescriptionChange('pd', e.target.value)}
+                    placeholder="00"
+                    pattern="^[0-9]*\.?[0-9]*$"
                   />
                 </div>
                 <div className="space-y-2">
@@ -300,8 +341,9 @@ const CustomerRegistration = () => {
                   <Input
                     id="add"
                     value={formData.prescription.add}
-                    onChange={(e) => setFormData({...formData, prescription: {...formData.prescription, add: e.target.value}})}
-                    placeholder="ADD"
+                    onChange={(e) => handlePrescriptionChange('add', e.target.value)}
+                    placeholder="0.00"
+                    pattern="^[+]?[0-9]*\.?[0-9]*$"
                   />
                 </div>
               </div>
