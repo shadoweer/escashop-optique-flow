@@ -4,12 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users, Clock, AlertTriangle, ArrowUp, ArrowDown, FileText } from 'lucide-react';
 import CustomerRegistration from './CustomerRegistration';
-import Table from '@/components/ui/table';
-import TableRow from '@/components/ui/table-row';
-import TableHeader from '@/components/ui/table-header';
-import TableBody from '@/components/ui/table-body';
-import TableCell from '@/components/ui/table-cell';
-import TableHead from '@/components/ui/table-head';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface Customer {
   id: string;
