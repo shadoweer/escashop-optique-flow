@@ -5,6 +5,7 @@ import QueueManagement from '@/components/QueueManagement';
 import DisplayMonitor from '@/components/DisplayMonitor';
 import NotificationSystem from '@/components/NotificationSystem';
 import TransactionLogs from '@/components/TransactionLogs';
+import ActivityLog from '@/components/ActivityLog';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('admin');
@@ -20,6 +21,8 @@ const Dashboard = () => {
         return <NotificationSystem />;
       case 'transactions':
         return <TransactionLogs />;
+      case 'activity':
+        return <ActivityLog />;
       default:
         return <QueueManagement />;
     }

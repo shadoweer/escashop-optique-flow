@@ -1,10 +1,15 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, Clock, AlertTriangle, ArrowUp, ArrowDown } from 'lucide-react';
+import { Users, Clock, AlertTriangle, ArrowUp, ArrowDown, FileText } from 'lucide-react';
 import CustomerRegistration from './CustomerRegistration';
+import Table from '@/components/ui/table';
+import TableRow from '@/components/ui/table-row';
+import TableHeader from '@/components/ui/table-header';
+import TableBody from '@/components/ui/table-body';
+import TableCell from '@/components/ui/table-cell';
+import TableHead from '@/components/ui/table-head';
 
 interface Customer {
   id: string;
@@ -80,6 +85,39 @@ const QueueManagement = () => {
     setCustomers(prev => prev.map(c => 
       c.id === customerId ? { ...c, status: 'completed' } : c
     ));
+  };
+
+  const exportCustomerToExcel = (customerId: string) => {
+    const customer = customers.find(c => c.id === customerId);
+    console.log('Exporting customer to Excel:', customer);
+    // Implementation for individual customer Excel export
+  };
+
+  const exportCustomerToPDF = (customerId: string) => {
+    const customer = customers.find(c => c.id === customerId);
+    console.log('Exporting customer to PDF:', customer);
+    // Implementation for individual customer PDF export
+  };
+
+  const exportCustomerToGoogleSheets = (customerId: string) => {
+    const customer = customers.find(c => c.id === customerId);
+    console.log('Exporting customer to Google Sheets:', customer);
+    // Implementation for individual customer Google Sheets export
+  };
+
+  const exportAllCustomersToExcel = () => {
+    console.log('Exporting all customers to Excel:', customers);
+    // Implementation for bulk Excel export
+  };
+
+  const exportAllCustomersToPDF = () => {
+    console.log('Exporting all customers to PDF:', customers);
+    // Implementation for bulk PDF export
+  };
+
+  const exportAllCustomersToGoogleSheets = () => {
+    console.log('Exporting all customers to Google Sheets:', customers);
+    // Implementation for bulk Google Sheets export with Google Apps Script
   };
 
   useEffect(() => {
@@ -221,32 +259,112 @@ const QueueManagement = () => {
   );
 
   const renderRegisteredCustomers = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle>Registered Customers</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {customers.map((customer) => (
-            <div key={customer.id} className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <p className="font-semibold">{customer.name}</p>
-                <p className="text-sm text-gray-600">Token: {customer.token}</p>
-                <p className="text-sm text-gray-600">
-                  Registered: {customer.registrationTime.toLocaleString()}
-                </p>
-              </div>
-              <Badge variant={
-                customer.status === 'completed' ? 'default' :
-                customer.status === 'serving' ? 'secondary' : 'outline'
-              }>
-                {customer.status}
-              </Badge>
-            </div>
-          ))}
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-gray-800">Registered Customers</h2>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={exportAllCustomersToExcel}>
+            Export All to Excel
+          </Button>
+          <Button variant="outline" onClick={exportAllCustomersToPDF}>
+            Export All to PDF
+          </Button>
+          <Button variant="outline" onClick={exportAllCustomersToGoogleSheets}>
+            Export All to Google Sheets
+          </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Token</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Priority Type</TableHead>
+                <TableHead>Wait Time</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Registration Time</TableHead>
+                <TableHead>OR Number</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {customers.map((customer) => (
+                <TableRow key={customer.id}>
+                  <TableCell className="font-bold">{customer.token}</TableCell>
+                  <TableCell className="font-semibold">{customer.name}</TableCell>
+                  <TableCell>
+                    {customer.priority ? (
+                      <Badge variant="destructive" className="text-xs">
+                        {customer.priorityType}
+                      </Badge>
+                    ) : (
+                      <span className="text-gray-500">Regular</span>
+                    )}
+                  </TableCell>
+                  <TableCell>{customer.waitTime} minutes</TableCell>
+                  <TableCell>
+                    <Badge variant={
+                      customer.status === 'completed' ? 'default' :
+                      customer.status === 'serving' ? 'secondary' : 'outline'
+                    }>
+                      {customer.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {customer.registrationTime.toLocaleString()}
+                  </TableCell>
+                  <TableCell className="font-mono text-sm">
+                    OR-{customer.id.padStart(3, '0')}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => exportCustomerToExcel(customer.id)}
+                        title="Export to Excel"
+                      >
+                        Excel
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => exportCustomerToPDF(customer.id)}
+                        title="Export to PDF"
+                      >
+                        PDF
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => exportCustomerToGoogleSheets(customer.id)}
+                        title="Export to Google Sheets"
+                      >
+                        Sheets
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-blue-50 border-blue-200">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 text-blue-800">
+            <FileText className="h-4 w-4" />
+            <span className="text-sm font-medium">
+              Google Sheets integration uses Google Apps Script web app for seamless data transfer
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 
   return (

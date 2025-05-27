@@ -3,11 +3,115 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import TransactionReport from './TransactionReport';
 
 const TransactionLogs = () => {
   const [activeTimeframe, setActiveTimeframe] = useState('Day');
+  const [showReport, setShowReport] = useState(false);
 
   const timeframes = ['Day', 'Week', 'Month'];
+
+  const transactions = [
+    {
+      id: 'TRX-1001',
+      orNumber: '250516-7421',
+      customer: 'Abner Escano',
+      salesAgent: 'Mel',
+      service: 'Non-Coated Lenses (ORD)',
+      amount: 120.00,
+      paymentMode: 'GCash',
+      date: '4/16/2025 8:45:12 AM',
+      status: 'Completed'
+    },
+    {
+      id: 'TRX-1000',
+      orNumber: '250516-3891',
+      customer: 'Maria Santos',
+      salesAgent: 'Ace',
+      service: 'Frame Adjustment',
+      amount: 25.00,
+      paymentMode: 'Cash',
+      date: '4/16/2025 8:30:45 AM',
+      status: 'Pending'
+    },
+    {
+      id: 'TRX-999',
+      orNumber: '250515-4278',
+      customer: 'John Doe',
+      salesAgent: 'Eric',
+      service: 'Eye Exam + Glasses',
+      amount: 250.00,
+      paymentMode: 'Maya',
+      date: '4/15/2025 4:12:33 PM',
+      status: 'Completed'
+    },
+    {
+      id: 'TRX-998',
+      orNumber: '250515-1234',
+      customer: 'Ana Rodriguez',
+      salesAgent: 'Jil',
+      service: 'Progressive Lenses',
+      amount: 4500.00,
+      paymentMode: 'Credit Card',
+      date: '4/15/2025 2:15:20 PM',
+      status: 'Completed'
+    },
+    {
+      id: 'TRX-997',
+      orNumber: '250515-5678',
+      customer: 'Pedro Garcia',
+      salesAgent: 'Shella',
+      service: 'Anti-radiation Coating',
+      amount: 1800.00,
+      paymentMode: 'Bank Transfer',
+      date: '4/15/2025 11:30:15 AM',
+      status: 'Completed'
+    }
+  ];
+
+  const summary = {
+    cash: 20560.00,
+    ecash: 0.00,
+    creditCard: 5370.00,
+    bankTransfer: 8000.00,
+    expenses: 0.00,
+    totalSales: 33930.00
+  };
+
+  const exportToExcel = () => {
+    console.log('Exporting to Excel...');
+    // Implementation for Excel export
+  };
+
+  const exportToPDF = () => {
+    console.log('Exporting to PDF...');
+    // Implementation for PDF export
+  };
+
+  const exportToGoogleSheets = () => {
+    console.log('Exporting to Google Sheets...');
+    // Implementation for Google Sheets export
+  };
+
+  if (showReport) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setShowReport(false)}
+          >
+            ← Back to Logs
+          </Button>
+          <h1 className="text-2xl font-bold text-gray-800">Financial Report</h1>
+        </div>
+        <TransactionReport />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -17,8 +121,15 @@ const TransactionLogs = () => {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-800">Transaction Summary</h2>
         <div className="flex gap-2">
-          <Button variant="outline">Export Log</Button>
-          <Button className="bg-orange-500 hover:bg-orange-600 text-white">💰 Financial Report</Button>
+          <Button variant="outline" onClick={exportToExcel}>Export to Excel</Button>
+          <Button variant="outline" onClick={exportToPDF}>Export to PDF</Button>
+          <Button variant="outline" onClick={exportToGoogleSheets}>Export to Google Sheets</Button>
+          <Button 
+            className="bg-orange-500 hover:bg-orange-600 text-white"
+            onClick={() => setShowReport(true)}
+          >
+            💰 Financial Report
+          </Button>
           <Button variant="outline">Refresh</Button>
         </div>
       </div>
@@ -44,42 +155,42 @@ const TransactionLogs = () => {
       <div className="grid grid-cols-6 gap-4">
         <Card className="bg-green-50 border-green-200">
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-green-600 mb-1">₱20560.00</div>
+            <div className="text-2xl font-bold text-green-600 mb-1">₱{summary.cash.toLocaleString()}</div>
             <div className="text-sm text-green-700">Cash Payments</div>
           </CardContent>
         </Card>
         
         <Card className="bg-blue-50 border-blue-200">
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600 mb-1">₱0.00</div>
+            <div className="text-2xl font-bold text-blue-600 mb-1">₱{summary.ecash.toLocaleString()}</div>
             <div className="text-sm text-blue-700">E-Cash Payments</div>
           </CardContent>
         </Card>
         
         <Card className="bg-purple-50 border-purple-200">
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-purple-600 mb-1">₱5370.00</div>
+            <div className="text-2xl font-bold text-purple-600 mb-1">₱{summary.creditCard.toLocaleString()}</div>
             <div className="text-sm text-purple-700">Credit Card</div>
           </CardContent>
         </Card>
         
         <Card className="bg-orange-50 border-orange-200">
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-orange-600 mb-1">₱8000.00</div>
+            <div className="text-2xl font-bold text-orange-600 mb-1">₱{summary.bankTransfer.toLocaleString()}</div>
             <div className="text-sm text-orange-700">Bank Transfer</div>
           </CardContent>
         </Card>
         
         <Card className="bg-red-50 border-red-200">
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-red-600 mb-1">₱0.00</div>
+            <div className="text-2xl font-bold text-red-600 mb-1">₱{summary.expenses.toLocaleString()}</div>
             <div className="text-sm text-red-700">Expenses</div>
           </CardContent>
         </Card>
         
         <Card className="bg-yellow-50 border-yellow-200">
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-orange-600 mb-1">₱33930.00</div>
+            <div className="text-2xl font-bold text-orange-600 mb-1">₱{summary.totalSales.toLocaleString()}</div>
             <div className="text-sm text-orange-700">Total Sales</div>
           </CardContent>
         </Card>
@@ -90,64 +201,44 @@ const TransactionLogs = () => {
         <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Transactions</h3>
         <Card>
           <CardContent className="p-0">
-            <div className="overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">OR Number</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sales Agent</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Mode</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">TRX-1001</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">250516-7421</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Abner Escano</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Mel</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Non-Coated Lenses (ORD)</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₱120.00</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">GCash</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">4/16/2025 8:45:12 AM</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge className="bg-green-100 text-green-800">Completed</Badge>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">TRX-1000</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">250516-3891</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Maria Santos</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Ace</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Frame Adjustment</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₱25.00</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Cash</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">4/16/2025 8:30:45 AM</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">TRX-999</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">250515-4278</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">John Doe</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Eric</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Eye Exam + Glasses</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₱250.00</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Maya</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">4/15/2025 4:12:33 PM</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge className="bg-green-100 text-green-800">Completed</Badge>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Transaction ID</TableHead>
+                  <TableHead>OR Number</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Sales Agent</TableHead>
+                  <TableHead>Service</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Payment Mode</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {transactions.map((transaction) => (
+                  <TableRow key={transaction.id}>
+                    <TableCell className="font-medium">{transaction.id}</TableCell>
+                    <TableCell>{transaction.orNumber}</TableCell>
+                    <TableCell>{transaction.customer}</TableCell>
+                    <TableCell>{transaction.salesAgent}</TableCell>
+                    <TableCell>{transaction.service}</TableCell>
+                    <TableCell>₱{transaction.amount.toLocaleString()}</TableCell>
+                    <TableCell>{transaction.paymentMode}</TableCell>
+                    <TableCell className="text-sm">{transaction.date}</TableCell>
+                    <TableCell>
+                      <Badge className={
+                        transaction.status === 'Completed' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-yellow-100 text-yellow-800'
+                      }>
+                        {transaction.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       </div>
