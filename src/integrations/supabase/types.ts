@@ -9,7 +9,134 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      activity_logs: {
+        Row: {
+          activity_type: string
+          customer_id: string | null
+          description: string
+          details: Json | null
+          id: string
+          ip_address: string | null
+          timestamp: string
+          user_name: string
+          user_type: string
+        }
+        Insert: {
+          activity_type: string
+          customer_id?: string | null
+          description: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          timestamp?: string
+          user_name: string
+          user_type: string
+        }
+        Update: {
+          activity_type?: string
+          customer_id?: string | null
+          description?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          timestamp?: string
+          user_name?: string
+          user_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          address: string
+          age: number
+          assigned_doctor: string
+          contact_number: string
+          created_at: string
+          distribution: string
+          email: string
+          frame_code: string
+          grade_type: string
+          id: string
+          lens_type: string
+          name: string
+          occupation: string
+          or_number: string
+          payment_info: Json
+          prescription: Json
+          priority: boolean
+          priority_type: string | null
+          registration_time: string
+          remarks: string | null
+          sales_agent: string
+          status: string
+          token: string
+          updated_at: string
+          wait_time: number
+        }
+        Insert: {
+          address: string
+          age: number
+          assigned_doctor: string
+          contact_number: string
+          created_at?: string
+          distribution: string
+          email: string
+          frame_code: string
+          grade_type: string
+          id?: string
+          lens_type: string
+          name: string
+          occupation: string
+          or_number: string
+          payment_info?: Json
+          prescription?: Json
+          priority?: boolean
+          priority_type?: string | null
+          registration_time?: string
+          remarks?: string | null
+          sales_agent: string
+          status?: string
+          token: string
+          updated_at?: string
+          wait_time?: number
+        }
+        Update: {
+          address?: string
+          age?: number
+          assigned_doctor?: string
+          contact_number?: string
+          created_at?: string
+          distribution?: string
+          email?: string
+          frame_code?: string
+          grade_type?: string
+          id?: string
+          lens_type?: string
+          name?: string
+          occupation?: string
+          or_number?: string
+          payment_info?: Json
+          prescription?: Json
+          priority?: boolean
+          priority_type?: string | null
+          registration_time?: string
+          remarks?: string | null
+          sales_agent?: string
+          status?: string
+          token?: string
+          updated_at?: string
+          wait_time?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

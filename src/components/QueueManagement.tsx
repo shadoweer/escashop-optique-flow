@@ -2,49 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, Clock, AlertTriangle, ArrowUp, ArrowDown, FileText } from 'lucide-react';
+import { Users, Clock, AlertTriangle, ArrowUp, ArrowDown, FileText, Loader2 } from 'lucide-react';
 import CustomerRegistration from './CustomerRegistration';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useCustomers } from '@/contexts/CustomerContext';
 
-interface Customer {
-  id: string;
-  name: string;
-  contactNumber: string;
-  email: string;
-  age: number;
-  address: string;
-  occupation: string;
-  distribution: string;
-  salesAgent: string;
-  assignedDoctor: string;
-  prescription: {
-    od: string;
-    os: string;
-    ou: string;
-    pd: string;
-    add: string;
-  };
-  gradeType: string;
-  lensType: string;
-  frameCode: string;
-  paymentInfo: {
-    mode: string;
-    amount: string;
-  };
-  remarks: string;
-  token: string;
-  priority: boolean;
-  priorityType?: string;
-  waitTime: number;
-  status: 'waiting' | 'serving' | 'completed';
-  registrationTime: Date;
-  orNumber: string;
-}
-
 const QueueManagement = () => {
   const [activeView, setActiveView] = useState<'overview' | 'registration' | 'customers'>('overview');
-  const { customers, updateCustomer } = useCustomers();
+  const { customers, updateCustomer, loading } = useCustomers();
 
   // ST-302: Calculate average wait time dynamically
   const averageWaitTime = customers.length > 0 
@@ -63,34 +28,16 @@ const QueueManagement = () => {
     return a.registrationTime.getTime() - b.registrationTime.getTime();
   });
 
-  // ST-304: Manual override capability
-  const moveCustomerUp = (customerId: string) => {
-    const customerIndex = customers.findIndex(c => c.id === customerId);
-    if (customerIndex > 0) {
-      // This is a simplified version - in a real app, you'd implement proper reordering
-      console.log(`Moving customer ${customerId} up in queue`);
-    }
-  };
-
-  const moveCustomerDown = (customerId: string) => {
-    const customerIndex = customers.findIndex(c => c.id === customerId);
-    if (customerIndex < customers.length - 1) {
-      // This is a simplified version - in a real app, you'd implement proper reordering
-      console.log(`Moving customer ${customerId} down in queue`);
-    }
-  };
-
-  const callNextCustomer = () => {
+  const callNextCustomer = async () => {
     const nextCustomer = sortedCustomers.find(c => c.status === 'waiting');
     if (nextCustomer) {
-      updateCustomer(nextCustomer.id, { status: 'serving' });
-      // ST-403: Sound effect simulation
+      await updateCustomer(nextCustomer.id, { status: 'serving' });
       console.log(`🔊 Calling customer: ${nextCustomer.name} - Token: ${nextCustomer.token}`);
     }
   };
 
-  const completeService = (customerId: string) => {
-    updateCustomer(customerId, { status: 'completed' });
+  const completeService = async (customerId: string) => {
+    await updateCustomer(customerId, { status: 'completed' });
   };
 
   const exportCustomerToExcel = (customerId: string) => {
@@ -132,6 +79,15 @@ const QueueManagement = () => {
 
     return () => clearInterval(interval);
   }, [customers, updateCustomer]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Loading customers...</span>
+      </div>
+    );
+  }
 
   const renderOverview = () => (
     <div className="space-y-6">
@@ -223,23 +179,6 @@ const QueueManagement = () => {
                 </div>
                 
                 <div className="flex items-center space-x-2">
-                  {/* ST-304: Manual override controls */}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => moveCustomerUp(customer.id)}
-                    disabled={index === 0}
-                  >
-                    <ArrowUp className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => moveCustomerDown(customer.id)}
-                    disabled={index === sortedCustomers.length - 1}
-                  >
-                    <ArrowDown className="h-4 w-4" />
-                  </Button>
                   {customer.status === 'serving' && (
                     <Button
                       size="sm"

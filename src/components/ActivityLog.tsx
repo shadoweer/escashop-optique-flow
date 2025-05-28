@@ -1,22 +1,73 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Clock, User, Activity, FileText } from 'lucide-react';
+import { Clock, User, Activity, FileText, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ActivityEntry {
   id: string;
-  timestamp: Date;
-  user: string;
-  action: string;
-  details: string;
-  category: 'registration' | 'queue' | 'transaction' | 'system';
+  activity_type: string;
+  user_type: string;
+  user_name: string;
+  description: string;
+  details: any;
+  timestamp: string;
+  ip_address?: string;
+  customer_id?: string;
 }
 
 const ActivityLog = () => {
-  const [activities] = useState<ActivityEntry[]>([]);
+  const [activities, setActivities] = useState<ActivityEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchActivities = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('activity_logs')
+        .select('*')
+        .order('timestamp', { ascending: false })
+        .limit(100);
+
+      if (error) {
+        console.error('Error fetching activities:', error);
+        return;
+      }
+
+      setActivities(data || []);
+    } catch (error) {
+      console.error('Error fetching activities:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchActivities();
+
+    // Set up real-time subscription for activity logs
+    const channel = supabase
+      .channel('activity-logs-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'activity_logs'
+        },
+        () => {
+          console.log('New activity logged, refreshing...');
+          fetchActivities();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -44,14 +95,23 @@ const ActivityLog = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Loading activities...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-800">Activity Log</h1>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={fetchActivities}>Refresh</Button>
           <Button variant="outline">Filter by Date</Button>
           <Button variant="outline">Export Log</Button>
-          <Button className="bg-orange-500 hover:bg-orange-600">Refresh</Button>
         </div>
       </div>
 
@@ -59,7 +119,7 @@ const ActivityLog = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="h-5 w-5" />
-            System Activities
+            System Activities ({activities.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -67,7 +127,7 @@ const ActivityLog = () => {
             <div className="text-center py-8">
               <Activity className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500">No activities recorded yet</p>
-              <p className="text-sm text-gray-400">Connect to database to view system activities</p>
+              <p className="text-sm text-gray-400">Activities will appear here as customers are registered and processed</p>
             </div>
           ) : (
             <Table>
@@ -76,7 +136,7 @@ const ActivityLog = () => {
                   <TableHead>Timestamp</TableHead>
                   <TableHead>User</TableHead>
                   <TableHead>Category</TableHead>
-                  <TableHead>Action</TableHead>
+                  <TableHead>Description</TableHead>
                   <TableHead>Details</TableHead>
                 </TableRow>
               </TableHeader>
@@ -84,19 +144,25 @@ const ActivityLog = () => {
                 {activities.map((activity) => (
                   <TableRow key={activity.id}>
                     <TableCell className="font-mono text-sm">
-                      {activity.timestamp.toLocaleString()}
+                      {new Date(activity.timestamp).toLocaleString()}
                     </TableCell>
-                    <TableCell className="font-medium">{activity.user}</TableCell>
+                    <TableCell className="font-medium">{activity.user_name}</TableCell>
                     <TableCell>
-                      <Badge className={getCategoryColor(activity.category)}>
+                      <Badge className={getCategoryColor(activity.activity_type)}>
                         <div className="flex items-center gap-1">
-                          {getCategoryIcon(activity.category)}
-                          {activity.category}
+                          {getCategoryIcon(activity.activity_type)}
+                          {activity.activity_type}
                         </div>
                       </Badge>
                     </TableCell>
-                    <TableCell className="font-medium">{activity.action}</TableCell>
-                    <TableCell className="max-w-md">{activity.details}</TableCell>
+                    <TableCell className="font-medium">{activity.description}</TableCell>
+                    <TableCell className="max-w-md">
+                      {activity.details && (
+                        <pre className="text-xs bg-gray-50 p-2 rounded overflow-auto">
+                          {JSON.stringify(activity.details, null, 2)}
+                        </pre>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -110,7 +176,7 @@ const ActivityLog = () => {
           <div className="flex items-center gap-2 text-yellow-800">
             <Activity className="h-4 w-4" />
             <span className="text-sm font-medium">
-              Activity entries are non-editable and non-deletable for audit compliance
+              Activity entries are automatically logged and non-editable for audit compliance
             </span>
           </div>
         </CardContent>
