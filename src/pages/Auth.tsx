@@ -5,8 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { AlertCircle, CheckCircle } from 'lucide-react';
 
 const Auth = () => {
   const [loginData, setLoginData] = useState({
@@ -22,6 +24,7 @@ const Auth = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
 
@@ -31,18 +34,37 @@ const Auth = () => {
     }
   }, [user, navigate]);
 
+  const handleDemoLogin = async (email: string, password: string) => {
+    setError(null);
+    setLoading(true);
+    setLoginData({ email, password });
+    
+    try {
+      await signIn(email, password);
+      navigate('/dashboard');
+    } catch (error: any) {
+      console.error('Demo login error:', error);
+      setError(error.message || 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!loginData.email || !loginData.password) {
+      setError('Please enter both email and password.');
       return;
     }
     
+    setError(null);
     setLoading(true);
     try {
       await signIn(loginData.email, loginData.password);
       navigate('/dashboard');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
+      setError(error.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -51,25 +73,29 @@ const Auth = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!signupData.email || !signupData.password || !signupData.fullName) {
+      setError('Please fill in all required fields.');
       return;
     }
     
     if (signupData.password !== signupData.confirmPassword) {
+      setError('Passwords do not match.');
       return;
     }
     
+    setError(null);
     setLoading(true);
     try {
       await signUp(signupData.email, signupData.password, signupData.fullName);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Signup error:', error);
+      setError(error.message || 'Signup failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md shadow-lg border">
         <CardHeader className="text-center pb-8">
           <div className="flex justify-center mb-6">
@@ -88,6 +114,58 @@ const Auth = () => {
             <p className="text-gray-500 text-sm">Staff Authentication Portal</p>
           </div>
         </CardHeader>
+
+        {error && (
+          <div className="mx-6 mb-4">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </div>
+        )}
+
+        {/* Quick Demo Login Section */}
+        <div className="mx-6 mb-6">
+          <Card className="bg-blue-50 border-blue-200">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm text-blue-800 flex items-center gap-2">
+                <CheckCircle className="h-4 w-4" />
+                Quick Demo Access
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-1 gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDemoLogin('admin@escaoptical.com', 'admin123')}
+                  disabled={loading}
+                  className="text-xs justify-start"
+                >
+                  👑 Admin Access
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDemoLogin('staff@escaoptical.com', 'staff123')}
+                  disabled={loading}
+                  className="text-xs justify-start"
+                >
+                  👥 Staff Access
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDemoLogin('viewer@escaoptical.com', 'viewer123')}
+                  disabled={loading}
+                  className="text-xs justify-start"
+                >
+                  👁️ Viewer Access
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         <Tabs defaultValue="login" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mx-6">
