@@ -7,10 +7,11 @@ import NotificationSystem from '@/components/NotificationSystem';
 import TransactionLogs from '@/components/TransactionLogs';
 import ActivityLog from '@/components/ActivityLog';
 import { CustomerProvider } from '@/contexts/CustomerContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('admin');
-  const [userRole] = useState('admin');
+  const { userProfile } = useAuth();
 
   const renderMainContent = () => {
     switch (activeTab) {
@@ -32,7 +33,11 @@ const Dashboard = () => {
   return (
     <CustomerProvider>
       <div className="min-h-screen bg-gray-50">
-        <Header activeTab={activeTab} setActiveTab={setActiveTab} userRole={userRole} />
+        <Header 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab} 
+          userRole={userProfile?.role || 'viewer'} 
+        />
         
         <main className="p-6">
           <div className="max-w-7xl mx-auto">
@@ -43,7 +48,7 @@ const Dashboard = () => {
         {/* Footer */}
         <footer className="bg-white border-t border-gray-200 p-4">
           <div className="max-w-7xl mx-auto text-center text-sm text-gray-500">
-            © 2025 Esca Optical - Queue Management System | Admin Access
+            © 2025 Esca Optical - Queue Management System | {userProfile?.role?.toUpperCase()} Access
           </div>
         </footer>
       </div>

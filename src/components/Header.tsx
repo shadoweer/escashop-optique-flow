@@ -1,6 +1,9 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { LogOut, User } from 'lucide-react';
 
 interface HeaderProps {
   activeTab: string;
@@ -9,12 +12,18 @@ interface HeaderProps {
 }
 
 const Header = ({ activeTab, setActiveTab, userRole }: HeaderProps) => {
+  const { userProfile, signOut } = useAuth();
+  
   const tabs = [
-    { id: 'admin', label: 'Admin Panel' },
-    { id: 'display', label: 'Display Monitor' },
-    { id: 'notifications', label: 'Notifications Log' },
-    { id: 'transactions', label: 'Transaction Logs' }
+    { id: 'admin', label: 'Admin Panel', roles: ['admin'] },
+    { id: 'display', label: 'Display Monitor', roles: ['admin', 'staff', 'viewer'] },
+    { id: 'notifications', label: 'Notifications Log', roles: ['admin', 'staff'] },
+    { id: 'transactions', label: 'Transaction Logs', roles: ['admin', 'staff'] }
   ];
+
+  const filteredTabs = tabs.filter(tab => 
+    userProfile ? tab.roles.includes(userProfile.role) : false
+  );
 
   return (
     <div className="bg-white border-b border-gray-200">
@@ -37,16 +46,33 @@ const Header = ({ activeTab, setActiveTab, userRole }: HeaderProps) => {
         <div className="flex items-center gap-3">
           <Badge variant="outline" className="text-gray-600">Internal Use Only</Badge>
           <Badge className="bg-green-500 text-white">System Online</Badge>
-          <div className="text-right">
-            <p className="text-sm font-medium text-gray-700">Admin User</p>
-            <p className="text-xs text-gray-500">Admin</p>
-          </div>
+          
+          {userProfile && (
+            <div className="flex items-center gap-2">
+              <div className="text-right">
+                <p className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                  <User className="h-3 w-3" />
+                  {userProfile.full_name}
+                </p>
+                <p className="text-xs text-gray-500 capitalize">{userProfile.role}</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={signOut}
+                className="text-gray-500 hover:text-gray-700"
+                title="Sign Out"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </div>
       </div>
       
       {/* Navigation Tabs */}
       <div className="flex items-center px-6">
-        {tabs.map((tab) => (
+        {filteredTabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
