@@ -16,48 +16,7 @@ interface ActivityEntry {
 }
 
 const ActivityLog = () => {
-  const [activities] = useState<ActivityEntry[]>([
-    {
-      id: 'ACT-001',
-      timestamp: new Date('2025-01-27T09:15:00'),
-      user: 'Admin',
-      action: 'Customer Registration',
-      details: 'New customer registered: Juan Dela Cruz (T-001)',
-      category: 'registration'
-    },
-    {
-      id: 'ACT-002',
-      timestamp: new Date('2025-01-27T09:20:00'),
-      user: 'Mel',
-      action: 'Queue Call',
-      details: 'Called customer T-001 to counter JA',
-      category: 'queue'
-    },
-    {
-      id: 'ACT-003',
-      timestamp: new Date('2025-01-27T09:45:00'),
-      user: 'Mel',
-      action: 'Transaction Completed',
-      details: 'OR-001 processed for ₱2,500.00 via GCash',
-      category: 'transaction'
-    },
-    {
-      id: 'ACT-004',
-      timestamp: new Date('2025-01-27T10:00:00'),
-      user: 'Admin',
-      action: 'Priority Queue Update',
-      details: 'Moved Rosa Martinez (T-005) to priority queue - PWD',
-      category: 'queue'
-    },
-    {
-      id: 'ACT-005',
-      timestamp: new Date('2025-01-27T10:30:00'),
-      user: 'Cashier',
-      action: 'Financial Report',
-      details: 'Generated daily transaction report',
-      category: 'system'
-    }
-  ]);
+  const [activities] = useState<ActivityEntry[]>([]);
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -104,37 +63,45 @@ const ActivityLog = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Timestamp</TableHead>
-                <TableHead>User</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Action</TableHead>
-                <TableHead>Details</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {activities.map((activity) => (
-                <TableRow key={activity.id}>
-                  <TableCell className="font-mono text-sm">
-                    {activity.timestamp.toLocaleString()}
-                  </TableCell>
-                  <TableCell className="font-medium">{activity.user}</TableCell>
-                  <TableCell>
-                    <Badge className={getCategoryColor(activity.category)}>
-                      <div className="flex items-center gap-1">
-                        {getCategoryIcon(activity.category)}
-                        {activity.category}
-                      </div>
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="font-medium">{activity.action}</TableCell>
-                  <TableCell className="max-w-md">{activity.details}</TableCell>
+          {activities.length === 0 ? (
+            <div className="text-center py-8">
+              <Activity className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">No activities recorded yet</p>
+              <p className="text-sm text-gray-400">Connect to database to view system activities</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Timestamp</TableHead>
+                  <TableHead>User</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Action</TableHead>
+                  <TableHead>Details</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {activities.map((activity) => (
+                  <TableRow key={activity.id}>
+                    <TableCell className="font-mono text-sm">
+                      {activity.timestamp.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="font-medium">{activity.user}</TableCell>
+                    <TableCell>
+                      <Badge className={getCategoryColor(activity.category)}>
+                        <div className="flex items-center gap-1">
+                          {getCategoryIcon(activity.category)}
+                          {activity.category}
+                        </div>
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="font-medium">{activity.action}</TableCell>
+                    <TableCell className="max-w-md">{activity.details}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
