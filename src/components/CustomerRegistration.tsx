@@ -7,8 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useCustomers } from '@/contexts/CustomerContext';
 
 const CustomerRegistration = () => {
+  const { addCustomer } = useCustomers();
   const [formData, setFormData] = useState({
     name: '',
     contactNumber: '',
@@ -17,8 +19,8 @@ const CustomerRegistration = () => {
     address: '',
     occupation: '',
     distribution: '',
-    salesAgent: '', // ST-204: Updated to be selectable
-    assignedDoctor: '', // New required field
+    salesAgent: '',
+    assignedDoctor: '',
     prescription: {
       od: '',
       os: '',
@@ -126,22 +128,37 @@ const CustomerRegistration = () => {
       return;
     }
 
-    // ST-213: Auto-generated OR number
-    const orNumber = `OR-${Date.now()}`;
-    
-    // ST-214: Token generation and printing simulation
-    const tokenNumber = `T-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+    // Determine priority status
+    const isPriority = formData.priority.seniorCitizen || formData.priority.pregnant || formData.priority.pwd;
+    let priorityType = '';
+    if (formData.priority.seniorCitizen) priorityType = 'Senior Citizen';
+    else if (formData.priority.pregnant) priorityType = 'Pregnant';
+    else if (formData.priority.pwd) priorityType = 'PWD';
+
+    // Add customer to the queue using context
+    addCustomer({
+      name: formData.name,
+      contactNumber: formData.contactNumber,
+      email: formData.email,
+      age: parseInt(formData.age),
+      address: formData.address,
+      occupation: formData.occupation,
+      distribution: formData.distribution,
+      salesAgent: formData.salesAgent,
+      assignedDoctor: formData.assignedDoctor,
+      prescription: formData.prescription,
+      gradeType: formData.gradeType,
+      lensType: formData.lensType,
+      frameCode: formData.frameCode,
+      paymentInfo: formData.paymentInfo,
+      remarks: formData.remarks,
+      priority: isPriority,
+      priorityType: priorityType
+    });
     
     toast({
       title: "Customer Registered Successfully",
-      description: `OR Number: ${orNumber} | Token: ${tokenNumber} - Token will be printed automatically.`
-    });
-    
-    console.log('Customer Registration Data:', {
-      ...formData,
-      orNumber,
-      tokenNumber,
-      registrationTime: new Date().toISOString()
+      description: "Customer has been added to the queue and token will be printed automatically."
     });
     
     // Reset form
