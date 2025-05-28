@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
 
 const Auth = () => {
   const [loginData, setLoginData] = useState({
@@ -25,7 +25,8 @@ const Auth = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { signIn, signUp, user } = useAuth();
+  const [creatingDemo, setCreatingDemo] = useState(false);
+  const { signIn, signUp, user, createDemoUser } = useAuth();
   const navigate = useNavigate();
 
   React.useEffect(() => {
@@ -33,6 +34,28 @@ const Auth = () => {
       navigate('/dashboard');
     }
   }, [user, navigate]);
+
+  const setupDemoAccounts = async () => {
+    setCreatingDemo(true);
+    setError(null);
+    
+    try {
+      console.log('Setting up demo accounts...');
+      
+      // Create all demo accounts
+      await createDemoUser('admin@escaoptical.com', 'admin123', 'System Administrator', 'admin');
+      await createDemoUser('staff@escaoptical.com', 'staff123', 'Staff Member', 'staff');
+      await createDemoUser('viewer@escaoptical.com', 'viewer123', 'System Viewer', 'viewer');
+      
+      console.log('Demo accounts created successfully');
+      setError(null);
+    } catch (error: any) {
+      console.error('Error setting up demo accounts:', error);
+      setError(`Demo setup failed: ${error.message}`);
+    } finally {
+      setCreatingDemo(false);
+    }
+  };
 
   const handleDemoLogin = async (email: string, password: string) => {
     setError(null);
@@ -124,16 +147,36 @@ const Auth = () => {
           </div>
         )}
 
-        {/* Quick Demo Login Section */}
+        {/* Demo Setup Section */}
         <div className="mx-6 mb-6">
           <Card className="bg-blue-50 border-blue-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm text-blue-800 flex items-center gap-2">
                 <CheckCircle className="h-4 w-4" />
-                Quick Demo Access
+                Demo Account Setup
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className="pt-0 space-y-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={setupDemoAccounts}
+                disabled={creatingDemo}
+                className="w-full text-xs flex items-center gap-2"
+              >
+                {creatingDemo ? (
+                  <>
+                    <RefreshCw className="h-3 w-3 animate-spin" />
+                    Setting up demo accounts...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="h-3 w-3" />
+                    Setup Demo Accounts
+                  </>
+                )}
+              </Button>
+              
               <div className="grid grid-cols-1 gap-2">
                 <Button
                   variant="outline"

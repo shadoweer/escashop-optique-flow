@@ -22,6 +22,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
   signOut: () => Promise<void>;
   hasRole: (role: 'admin' | 'staff' | 'viewer') => boolean;
+  createDemoUser: (email: string, password: string, fullName: string, role: 'admin' | 'staff' | 'viewer') => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -98,9 +99,78 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
+  const createDemoUser = async (email: string, password: string, fullName: string, role: 'admin' | 'staff' | 'viewer') => {
+    try {
+      console.log('Creating demo user:', email, role);
+      
+      // First, try to sign up the user
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+          },
+        },
+      });
+
+      console.log('SignUp response:', { signUpData, signUpError });
+
+      if (signUpError && !signUpError.message.includes('already registered')) {
+        console.error('SignUp error:', signUpError);
+        throw signUpError;
+      }
+
+      // If user already exists or was just created, try to update their profile
+      if (signUpData.user?.id) {
+        console.log('Updating user profile for:', signUpData.user.id);
+        
+        // Update or insert profile
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: signUpData.user.id,
+            email,
+            full_name: fullName,
+            role
+          });
+
+        if (profileError) {
+          console.error('Profile upsert error:', profileError);
+        }
+
+        // Update or insert user role
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .upsert({
+            user_id: signUpData.user.id,
+            role
+          });
+
+        if (roleError) {
+          console.error('User role upsert error:', roleError);
+        }
+      }
+
+      console.log('Demo user created successfully:', email);
+    } catch (error) {
+      console.error('Error creating demo user:', error);
+      throw error;
+    }
+  };
+
   const signIn = async (email: string, password: string) => {
     try {
       console.log('Attempting sign in for:', email);
+      
+      // Special handling for demo accounts - create them if they don't exist
+      if (email === 'admin@escaoptical.com' && password === 'admin123') {
+        await createDemoUser(email, password, 'System Administrator', 'admin');
+      } else if (email === 'staff@escaoptical.com' && password === 'staff123') {
+        await createDemoUser(email, password, 'Staff Member', 'staff');
+      } else if (email === 'viewer@escaoptical.com' && password === 'viewer123') {
+        await createDemoUser(email, password, 'System Viewer', 'viewer');
+      }
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -215,6 +285,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signUp,
     signOut,
     hasRole,
+    createDemoUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
