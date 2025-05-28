@@ -31,12 +31,34 @@ export const useCustomerData = () => {
         distribution: customer.distribution,
         salesAgent: customer.sales_agent,
         assignedDoctor: customer.assigned_doctor,
-        prescription: customer.prescription,
+        prescription: typeof customer.prescription === 'object' && customer.prescription !== null 
+          ? {
+              od: (customer.prescription as any).od || '',
+              os: (customer.prescription as any).os || '',
+              ou: (customer.prescription as any).ou || '',
+              pd: (customer.prescription as any).pd || '',
+              add: (customer.prescription as any).add || ''
+            }
+          : {
+              od: '',
+              os: '',
+              ou: '',
+              pd: '',
+              add: ''
+            },
         gradeType: customer.grade_type,
         lensType: customer.lens_type,
         frameCode: customer.frame_code,
-        paymentInfo: customer.payment_info,
-        remarks: customer.remarks,
+        paymentInfo: typeof customer.payment_info === 'object' && customer.payment_info !== null
+          ? {
+              mode: (customer.payment_info as any).mode || '',
+              amount: (customer.payment_info as any).amount || ''
+            }
+          : {
+              mode: '',
+              amount: ''
+            },
+        remarks: customer.remarks || '',
         token: customer.token,
         priority: customer.priority,
         priorityType: customer.priority_type,
