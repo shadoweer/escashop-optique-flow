@@ -16,6 +16,8 @@ const Header = ({ activeTab, setActiveTab, userRole }: HeaderProps) => {
   
   const tabs = [
     { id: 'admin', label: 'Admin Panel', roles: ['admin'] },
+    { id: 'users', label: 'User Management', roles: ['admin'] },
+    { id: 'notifications-center', label: 'Notification Center', roles: ['admin', 'staff'] },
     { id: 'display', label: 'Display Monitor', roles: ['admin', 'staff', 'viewer'] },
     { id: 'notifications', label: 'Notifications Log', roles: ['admin', 'staff'] },
     { id: 'transactions', label: 'Transaction Logs', roles: ['admin', 'staff'] }
@@ -71,12 +73,12 @@ const Header = ({ activeTab, setActiveTab, userRole }: HeaderProps) => {
       </div>
       
       {/* Navigation Tabs */}
-      <div className="flex items-center px-6">
+      <div className="flex items-center px-6 overflow-x-auto">
         {filteredTabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === tab.id
                 ? 'border-orange-500 text-orange-500'
                 : 'border-transparent text-gray-600 hover:text-gray-800'

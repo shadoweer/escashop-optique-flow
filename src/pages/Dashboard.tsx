@@ -6,6 +6,8 @@ import DisplayMonitor from '@/components/DisplayMonitor';
 import NotificationSystem from '@/components/NotificationSystem';
 import TransactionLogs from '@/components/TransactionLogs';
 import ActivityLog from '@/components/ActivityLog';
+import UserManagement from '@/components/UserManagement';
+import NotificationCenter from '@/components/NotificationCenter';
 import { CustomerProvider } from '@/contexts/CustomerContext';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -17,6 +19,10 @@ const Dashboard = () => {
     switch (activeTab) {
       case 'admin':
         return <QueueManagement />;
+      case 'users':
+        return <UserManagement />;
+      case 'notifications-center':
+        return <NotificationCenter />;
       case 'display':
         return <DisplayMonitor />;
       case 'notifications':
