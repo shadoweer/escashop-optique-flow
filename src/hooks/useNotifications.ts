@@ -17,18 +17,17 @@ export const useNotifications = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const sendNotification = async (customer: Customer, type: 'sms' | 'email') => {
+  const sendSMSNotification = async (customer: Customer) => {
     setLoading(true);
     try {
-      console.log(`Sending ${type} notification to customer ${customer.id}`);
+      console.log(`Sending SMS notification to customer ${customer.id}`);
       
       const { data, error } = await supabase.functions.invoke('send-notification', {
         body: {
           customerId: customer.id,
-          type,
+          type: 'sms',
           customerName: customer.name,
           customerPhone: customer.contactNumber,
-          customerEmail: customer.email,
           token: customer.token,
           waitTime: customer.waitTime,
         },
@@ -40,18 +39,18 @@ export const useNotifications = () => {
 
       toast({
         title: "Success",
-        description: `${type.toUpperCase()} notification sent to ${customer.name}`,
+        description: `SMS notification sent to ${customer.name}`,
       });
 
       return data;
     } catch (error) {
-      console.error(`Failed to send ${type} notification:`, error);
+      console.error('Failed to send SMS notification:', error);
       
-      let errorMessage = `Failed to send ${type} notification`;
+      let errorMessage = 'Failed to send SMS notification';
       if (error.message?.includes('credentials not configured')) {
-        errorMessage = `${type.toUpperCase()} service not configured. Please add API keys in settings.`;
+        errorMessage = 'SMS service not configured. Please add API keys in settings.';
       } else if (error.message?.includes('required')) {
-        errorMessage = `Customer ${type === 'sms' ? 'phone number' : 'email'} is missing`;
+        errorMessage = 'Customer phone number is missing';
       }
       
       toast({
@@ -66,7 +65,7 @@ export const useNotifications = () => {
     }
   };
 
-  const sendBulkNotifications = async (customers: Customer[], type: 'sms' | 'email') => {
+  const sendBulkSMSNotifications = async (customers: Customer[]) => {
     setLoading(true);
     let successCount = 0;
     let errorCount = 0;
@@ -74,17 +73,17 @@ export const useNotifications = () => {
     try {
       for (const customer of customers) {
         try {
-          await sendNotification(customer, type);
+          await sendSMSNotification(customer);
           successCount++;
         } catch (error) {
           errorCount++;
-          console.error(`Failed to send ${type} to ${customer.name}:`, error);
+          console.error(`Failed to send SMS to ${customer.name}:`, error);
         }
       }
 
       toast({
-        title: "Bulk Notification Complete",
-        description: `Sent ${successCount} notifications successfully. ${errorCount > 0 ? `${errorCount} failed.` : ''}`,
+        title: "Bulk SMS Complete",
+        description: `Sent ${successCount} SMS notifications successfully. ${errorCount > 0 ? `${errorCount} failed.` : ''}`,
         variant: errorCount > 0 ? "destructive" : "default",
       });
 
@@ -95,7 +94,7 @@ export const useNotifications = () => {
 
   return {
     loading,
-    sendNotification,
-    sendBulkNotifications,
+    sendSMSNotification,
+    sendBulkSMSNotifications,
   };
 };

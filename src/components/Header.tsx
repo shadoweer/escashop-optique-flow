@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut, User } from 'lucide-react';
+import { Users, Monitor, Bell, FileText, Activity, UserCheck, BellRing, LogOut, Home } from 'lucide-react';
 
 interface HeaderProps {
   activeTab: string;
@@ -12,83 +12,107 @@ interface HeaderProps {
 }
 
 const Header = ({ activeTab, setActiveTab, userRole }: HeaderProps) => {
-  const { userProfile, signOut } = useAuth();
-  
-  const tabs = [
-    { id: 'admin', label: 'Admin Panel', roles: ['admin'] },
-    { id: 'users', label: 'User Management', roles: ['admin'] },
-    { id: 'notifications-center', label: 'Notification Center', roles: ['admin', 'staff'] },
-    { id: 'display', label: 'Display Monitor', roles: ['admin', 'staff', 'viewer'] },
-    { id: 'notifications', label: 'Notifications Log', roles: ['admin', 'staff'] },
-    { id: 'transactions', label: 'Transaction Logs', roles: ['admin', 'staff'] }
+  const { signOut, userProfile } = useAuth();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  const navItems = [
+    { id: 'admin', label: 'Admin Dashboard', icon: Home, roles: ['admin', 'staff', 'viewer'] },
+    { id: 'users', label: 'Users', icon: UserCheck, roles: ['admin'] },
+    { id: 'notifications-center', label: 'Notification Center', icon: BellRing, roles: ['admin', 'staff'] },
+    { id: 'display', label: 'Display Monitor', icon: Monitor, roles: ['admin', 'staff', 'viewer'] },
+    { id: 'notifications', label: 'Notifications Log', icon: Bell, roles: ['admin', 'staff'] },
+    { id: 'transactions', label: 'Transaction Logs', icon: FileText, roles: ['admin', 'staff'] },
+    { id: 'activity', label: 'Activity Log', icon: Activity, roles: ['admin', 'staff'] },
   ];
 
-  const filteredTabs = tabs.filter(tab => 
-    userProfile ? tab.roles.includes(userProfile.role) : false
-  );
+  const visibleNavItems = navItems.filter(item => item.roles.includes(userRole));
 
   return (
-    <div className="bg-white border-b border-gray-200">
-      {/* Top Header */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100">
-        <div className="flex items-center gap-3">
-          <img 
-            src="/lovable-uploads/cbedd510-5670-4550-8b1b-bf1a1a3bf793.png" 
-            alt="EscaShop Logo" 
-            className="h-8 w-8 object-contain"
-          />
-          <div>
-            <h1 className="text-lg font-bold">
-              <span className="text-orange-500">ESCA</span> <span className="text-gray-700">SHOP</span>
-            </h1>
-            <p className="text-xs text-gray-500">PREMIUM EYEWEAR</p>
+    <header className="bg-white shadow-sm border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="flex items-center justify-between">
+          {/* Logo and Title */}
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <img 
+                src="/lovable-uploads/cbedd510-5670-4550-8b1b-bf1a1a3bf793.png" 
+                alt="Esca Optical" 
+                className="h-10 w-auto"
+              />
+              <div>
+                <h1 className="text-xl font-bold text-gray-800">
+                  <span className="text-orange-500">ESCA</span> <span className="text-gray-700">SHOP</span>
+                </h1>
+                <p className="text-xs text-gray-500">PREMIUM EYEWEAR</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Status Badge */}
+          <div className="flex items-center space-x-4">
+            <Badge variant="outline" className="text-xs">
+              Internal Use Only
+            </Badge>
+            <Badge className="bg-green-500 text-white text-xs">
+              System Online
+            </Badge>
+          </div>
+
+          {/* User Info */}
+          <div className="flex items-center space-x-4">
+            <div className="text-right">
+              <p className="text-sm font-medium text-gray-800">
+                {userProfile?.role === 'admin' && '🔧 System Administrator'}
+                {userProfile?.role === 'staff' && '👤 Staff'}
+                {userProfile?.role === 'viewer' && '👁️ Viewer'}
+              </p>
+              <p className="text-xs text-gray-500">Staff</p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSignOut}
+              className="flex items-center gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </Button>
           </div>
         </div>
-        
-        <div className="flex items-center gap-3">
-          <Badge variant="outline" className="text-gray-600">Internal Use Only</Badge>
-          <Badge className="bg-green-500 text-white">System Online</Badge>
-          
-          {userProfile && (
-            <div className="flex items-center gap-2">
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                  <User className="h-3 w-3" />
-                  {userProfile.full_name}
-                </p>
-                <p className="text-xs text-gray-500 capitalize">{userProfile.role}</p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={signOut}
-                className="text-gray-500 hover:text-gray-700"
-                title="Sign Out"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </div>
+
+        {/* Navigation */}
+        <nav className="mt-4">
+          <div className="flex space-x-1">
+            {visibleNavItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Button
+                  key={item.id}
+                  variant={activeTab === item.id ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setActiveTab(item.id)}
+                  className={`flex items-center gap-2 ${
+                    activeTab === item.id 
+                      ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </Button>
+              );
+            })}
+          </div>
+        </nav>
       </div>
-      
-      {/* Navigation Tabs */}
-      <div className="flex items-center px-6 overflow-x-auto">
-        {filteredTabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === tab.id
-                ? 'border-orange-500 text-orange-500'
-                : 'border-transparent text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-    </div>
+    </header>
   );
 };
 

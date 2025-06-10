@@ -5,24 +5,22 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Bell, MessageSquare, Mail, Volume2, Settings, Loader2, ExternalLink } from 'lucide-react';
+import { Bell, MessageSquare, Volume2, Settings, Loader2, ExternalLink } from 'lucide-react';
 import { useCustomers } from '@/contexts/CustomerContext';
 import { useNotifications } from '@/hooks/useNotifications';
 import NotificationSetup from './NotificationSetup';
 
 interface NotificationSettings {
   smsEnabled: boolean;
-  emailEnabled: boolean;
   soundEnabled: boolean;
   autoSend: boolean;
 }
 
 const NotificationSystem = () => {
   const { customers } = useCustomers();
-  const { loading, sendNotification, sendBulkNotifications } = useNotifications();
+  const { loading, sendSMSNotification, sendBulkSMSNotifications } = useNotifications();
   const [settings, setSettings] = useState<NotificationSettings>({
     smsEnabled: true,
-    emailEnabled: true,
     soundEnabled: true,
     autoSend: false
   });
@@ -32,34 +30,34 @@ const NotificationSystem = () => {
     customer.status === 'waiting' && customer.waitTime > 0
   );
 
-  const handleSendNotification = async (customerId: string, type: 'sms' | 'email') => {
+  const handleSendSMSNotification = async (customerId: string) => {
     const customer = customers.find(c => c.id === customerId);
     if (!customer) return;
 
     try {
-      await sendNotification(customer, type);
+      await sendSMSNotification(customer);
     } catch (error) {
-      console.error(`Failed to send ${type} notification:`, error);
+      console.error('Failed to send SMS notification:', error);
     }
   };
 
-  const handleBulkNotifications = async (type: 'sms' | 'email') => {
+  const handleBulkSMSNotifications = async () => {
     try {
-      await sendBulkNotifications(customersNeedingNotification, type);
+      await sendBulkSMSNotifications(customersNeedingNotification);
     } catch (error) {
-      console.error(`Failed to send bulk ${type} notifications:`, error);
+      console.error('Failed to send bulk SMS notifications:', error);
     }
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-800">Notification System</h1>
+        <h1 className="text-2xl font-bold text-gray-800">SMS Notification System</h1>
       </div>
 
       <Tabs defaultValue="notifications" className="space-y-4">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="notifications">Send Notifications</TabsTrigger>
+          <TabsTrigger value="notifications">Send SMS Notifications</TabsTrigger>
           <TabsTrigger value="setup">Service Setup</TabsTrigger>
         </TabsList>
 
@@ -69,11 +67,11 @@ const NotificationSystem = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5" />
-                Notification Settings
+                SMS Notification Settings
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <MessageSquare className="h-4 w-4" />
@@ -82,17 +80,6 @@ const NotificationSystem = () => {
                   <Switch 
                     checked={settings.smsEnabled}
                     onCheckedChange={(checked) => setSettings(prev => ({ ...prev, smsEnabled: checked }))}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
-                    <span>Email Notifications</span>
-                  </div>
-                  <Switch 
-                    checked={settings.emailEnabled}
-                    onCheckedChange={(checked) => setSettings(prev => ({ ...prev, emailEnabled: checked }))}
                   />
                 </div>
                 
@@ -124,27 +111,17 @@ const NotificationSystem = () => {
           {/* Bulk Actions */}
           <Card>
             <CardHeader>
-              <CardTitle>Bulk Notifications</CardTitle>
+              <CardTitle>Bulk SMS Notifications</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex gap-4 mb-4">
                 <Button 
-                  onClick={() => handleBulkNotifications('sms')}
+                  onClick={handleBulkSMSNotifications}
                   disabled={loading || !settings.smsEnabled || customersNeedingNotification.length === 0}
                   className="flex items-center gap-2"
                 >
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
                   Send SMS to All ({customersNeedingNotification.length})
-                </Button>
-                
-                <Button 
-                  onClick={() => handleBulkNotifications('email')}
-                  disabled={loading || !settings.emailEnabled || customersNeedingNotification.length === 0}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
-                  Send Email to All ({customersNeedingNotification.length})
                 </Button>
               </div>
               
@@ -157,7 +134,7 @@ const NotificationSystem = () => {
           {/* Customer List for Individual Notifications */}
           <Card>
             <CardHeader>
-              <CardTitle>Individual Notifications</CardTitle>
+              <CardTitle>Individual SMS Notifications</CardTitle>
             </CardHeader>
             <CardContent>
               {customersNeedingNotification.length === 0 ? (
@@ -174,7 +151,7 @@ const NotificationSystem = () => {
                         <div>
                           <p className="font-medium">{customer.name}</p>
                           <p className="text-sm text-gray-500">
-                            📱 {customer.contactNumber} | 📧 {customer.email}
+                            📱 {customer.contactNumber}
                           </p>
                         </div>
                         <Badge variant="secondary">
@@ -185,20 +162,11 @@ const NotificationSystem = () => {
                       <div className="flex gap-2">
                         <Button 
                           size="sm"
-                          onClick={() => handleSendNotification(customer.id, 'sms')}
+                          onClick={() => handleSendSMSNotification(customer.id)}
                           disabled={loading || !settings.smsEnabled || !customer.contactNumber}
                         >
                           <MessageSquare className="h-3 w-3 mr-1" />
-                          SMS
-                        </Button>
-                        <Button 
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleSendNotification(customer.id, 'email')}
-                          disabled={loading || !settings.emailEnabled || !customer.email}
-                        >
-                          <Mail className="h-3 w-3 mr-1" />
-                          Email
+                          Send SMS
                         </Button>
                       </div>
                     </div>
@@ -220,7 +188,7 @@ const NotificationSystem = () => {
           <div className="flex items-center gap-2 text-blue-800">
             <ExternalLink className="h-4 w-4" />
             <span className="text-sm font-medium">
-              Visit the "Service Setup" tab to configure SMS (Twilio) and Email (Resend) providers
+              Visit the "Service Setup" tab to configure SMS (Twilio/Semaphore) provider
             </span>
           </div>
         </CardContent>
