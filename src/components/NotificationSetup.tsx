@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Settings, CheckCircle, AlertCircle, ExternalLink } from 'lucide-react';
+import { MessageSquare, Settings, CheckCircle, AlertCircle, ExternalLink, Phone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const NotificationSetup = () => {
@@ -14,6 +14,15 @@ const NotificationSetup = () => {
   const [testing, setTesting] = useState(false);
 
   const testNotification = async () => {
+    if (!testPhone) {
+      toast({
+        title: "Error",
+        description: "Please enter a phone number",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setTesting(true);
     
     try {
@@ -26,17 +35,26 @@ const NotificationSetup = () => {
         waitTime: 15,
       };
 
-      // This would use the actual notification function
       console.log('Testing SMS notification:', testData);
       
+      // Call the actual notification function
+      const { data, error } = await supabase.functions.invoke('send-notification', {
+        body: testData,
+      });
+
+      if (error) {
+        throw error;
+      }
+
       toast({
-        title: "Test SMS Notification",
-        description: `Test SMS notification would be sent to ${testPhone}`,
+        title: "Test SMS Sent Successfully!",
+        description: `Test SMS notification sent to ${testPhone}. Check your phone.`,
       });
     } catch (error) {
+      console.error('Test SMS failed:', error);
       toast({
         title: "Test Failed",
-        description: "Failed to send test SMS",
+        description: `Failed to send test SMS: ${error.message}`,
         variant: "destructive",
       });
     } finally {
@@ -79,16 +97,34 @@ const NotificationSetup = () => {
             </div>
           </div>
 
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+              <div>
+                <h4 className="font-medium text-yellow-900">Important Notes for Philippines SMS</h4>
+                <ul className="text-sm text-yellow-700 mt-2 space-y-1">
+                  <li>• Use international format: +639XXXXXXXXX</li>
+                  <li>• For trial accounts, verify your phone number in Twilio console</li>
+                  <li>• US numbers may have delivery restrictions to Philippines</li>
+                  <li>• Check Twilio logs if messages don't arrive</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
           <div className="space-y-3">
             <div>
               <Label htmlFor="test-phone">Test Phone Number</Label>
               <Input
                 id="test-phone"
                 type="tel"
-                placeholder="+639xxxxxxxxx (Philippines format)"
+                placeholder="+639XXXXXXXXX or 09XXXXXXXXX"
                 value={testPhone}
                 onChange={(e) => setTestPhone(e.target.value)}
               />
+              <p className="text-xs text-gray-500 mt-1">
+                Philippine format: +639XXXXXXXXX or 09XXXXXXXXX
+              </p>
             </div>
             <Button
               onClick={testNotification}
@@ -112,9 +148,9 @@ const NotificationSetup = () => {
       <Card className="bg-orange-50 border-orange-200">
         <CardContent className="p-4">
           <div className="flex items-center gap-2 text-orange-800">
-            <ExternalLink className="h-4 w-4" />
+            <Phone className="h-4 w-4" />
             <span className="text-sm font-medium">
-              SMS notifications are now configured and ready to use with your queue management system
+              SMS notifications are configured with Twilio. Test the service above to ensure delivery to Philippine numbers.
             </span>
           </div>
         </CardContent>
