@@ -9,13 +9,12 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Mail, MessageSquare, Bell, Send, Settings } from 'lucide-react';
+import { MessageSquare, Bell, Send, Settings } from 'lucide-react';
 
 interface NotificationTemplate {
   id: string;
   name: string;
-  type: 'sms' | 'email';
-  subject?: string;
+  type: 'sms';
   message: string;
   enabled: boolean;
 }
@@ -31,14 +30,6 @@ const NotificationCenter = () => {
     },
     {
       id: '2',
-      name: 'Appointment Reminder',
-      type: 'email',
-      subject: 'Appointment Reminder - Esca Optical',
-      message: 'Dear {{customerName}}, this is a reminder for your appointment on {{date}} at {{time}}.',
-      enabled: true
-    },
-    {
-      id: '3',
       name: 'Service Complete',
       type: 'sms',
       message: 'Thank you {{customerName}}! Your service is complete. Token: {{token}}. Please collect your receipt.',
@@ -48,8 +39,7 @@ const NotificationCenter = () => {
 
   const [newTemplate, setNewTemplate] = useState({
     name: '',
-    type: 'sms' as 'sms' | 'email',
-    subject: '',
+    type: 'sms' as 'sms',
     message: '',
     enabled: true
   });
@@ -64,7 +54,6 @@ const NotificationCenter = () => {
 
   const [settings, setSettings] = useState({
     smsEnabled: true,
-    emailEnabled: true,
     autoNotify: true
   });
 
@@ -74,7 +63,7 @@ const NotificationCenter = () => {
     if (!testNotification.recipient || !testNotification.templateId) {
       toast({
         title: "Error",
-        description: "Please select a template and enter recipient details",
+        description: "Please select a template and enter recipient phone number",
         variant: "destructive"
       });
       return;
@@ -90,12 +79,12 @@ const NotificationCenter = () => {
         .replace('{{token}}', testNotification.token)
         .replace('{{counter}}', testNotification.counter);
 
-      // Log the notification (in real app, this would send via SMS/Email service)
-      console.log(`Sending ${template.type} to ${testNotification.recipient}:`, message);
+      // Log the notification (in real app, this would send via SMS service)
+      console.log(`Sending SMS to ${testNotification.recipient}:`, message);
 
       toast({
-        title: "Test Notification Sent",
-        description: `${template.type.toUpperCase()} sent to ${testNotification.recipient}`
+        title: "Test SMS Sent",
+        description: `SMS sent to ${testNotification.recipient}`
       });
 
       // Log to activity
@@ -103,7 +92,7 @@ const NotificationCenter = () => {
         activity_type: 'notification',
         user_name: 'Admin',
         user_type: 'admin',
-        description: `Test ${template.type} notification sent`,
+        description: `Test SMS notification sent`,
         details: {
           recipient: testNotification.recipient,
           template: template.name,
@@ -137,11 +126,11 @@ const NotificationCenter = () => {
     };
 
     setTemplates([...templates, template]);
-    setNewTemplate({ name: '', type: 'sms', subject: '', message: '', enabled: true });
+    setNewTemplate({ name: '', type: 'sms', message: '', enabled: true });
 
     toast({
       title: "Success",
-      description: "Notification template saved"
+      description: "SMS template saved"
     });
   };
 
@@ -156,10 +145,10 @@ const NotificationCenter = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-800">Notification Center</h2>
-          <p className="text-gray-600">Manage SMS & Email notifications for customers</p>
+          <p className="text-gray-600">Manage SMS notifications for customers</p>
         </div>
         <Badge variant="outline" className="text-green-600 border-green-600">
-          SMS & Email Ready
+          SMS Ready
         </Badge>
       </div>
 
@@ -168,11 +157,11 @@ const NotificationCenter = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
-            Notification Settings
+            SMS Notification Settings
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 gap-6">
             <div className="flex items-center justify-between">
               <div>
                 <Label className="text-sm font-medium">SMS Notifications</Label>
@@ -181,16 +170,6 @@ const NotificationCenter = () => {
               <Switch 
                 checked={settings.smsEnabled}
                 onCheckedChange={(checked) => setSettings({...settings, smsEnabled: checked})}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-sm font-medium">Email Notifications</Label>
-                <p className="text-xs text-gray-500">Send detailed updates via email</p>
-              </div>
-              <Switch 
-                checked={settings.emailEnabled}
-                onCheckedChange={(checked) => setSettings({...settings, emailEnabled: checked})}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -213,7 +192,7 @@ const NotificationCenter = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bell className="h-5 w-5" />
-              Notification Templates
+              SMS Templates
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -221,11 +200,7 @@ const NotificationCenter = () => {
               <div key={template.id} className="border rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    {template.type === 'sms' ? (
-                      <MessageSquare className="h-4 w-4 text-blue-500" />
-                    ) : (
-                      <Mail className="h-4 w-4 text-green-500" />
-                    )}
+                    <MessageSquare className="h-4 w-4 text-blue-500" />
                     <span className="font-medium">{template.name}</span>
                   </div>
                   <Switch 
@@ -233,23 +208,18 @@ const NotificationCenter = () => {
                     onCheckedChange={() => toggleTemplate(template.id)}
                   />
                 </div>
-                {template.subject && (
-                  <p className="text-sm font-medium text-gray-700 mb-1">
-                    Subject: {template.subject}
-                  </p>
-                )}
                 <p className="text-sm text-gray-600">{template.message}</p>
               </div>
             ))}
           </CardContent>
         </Card>
 
-        {/* Test Notifications */}
+        {/* Test SMS */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Send className="h-5 w-5" />
-              Test Notification
+              Test SMS Notification
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -264,19 +234,19 @@ const NotificationCenter = () => {
                 <option value="">Select template</option>
                 {templates.filter(t => t.enabled).map(template => (
                   <option key={template.id} value={template.id}>
-                    {template.name} ({template.type.toUpperCase()})
+                    {template.name}
                   </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <Label htmlFor="recipient">Recipient (Email/Phone)</Label>
+              <Label htmlFor="recipient">Recipient Phone Number</Label>
               <Input
                 id="recipient"
                 value={testNotification.recipient}
                 onChange={(e) => setTestNotification({...testNotification, recipient: e.target.value})}
-                placeholder="customer@email.com or +1234567890"
+                placeholder="+1234567890"
               />
             </div>
 
@@ -308,7 +278,7 @@ const NotificationCenter = () => {
             </div>
 
             <Button onClick={sendTestNotification} className="w-full">
-              Send Test Notification
+              Send Test SMS
             </Button>
           </CardContent>
         </Card>
@@ -317,7 +287,7 @@ const NotificationCenter = () => {
       {/* Create New Template */}
       <Card>
         <CardHeader>
-          <CardTitle>Create New Template</CardTitle>
+          <CardTitle>Create New SMS Template</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
@@ -332,29 +302,14 @@ const NotificationCenter = () => {
             </div>
             <div>
               <Label htmlFor="newType">Type</Label>
-              <select 
-                id="newType"
-                className="w-full mt-1 p-2 border rounded-md"
-                value={newTemplate.type}
-                onChange={(e) => setNewTemplate({...newTemplate, type: e.target.value as 'sms' | 'email'})}
-              >
-                <option value="sms">SMS</option>
-                <option value="email">Email</option>
-              </select>
-            </div>
-          </div>
-
-          {newTemplate.type === 'email' && (
-            <div>
-              <Label htmlFor="newSubject">Email Subject</Label>
               <Input
-                id="newSubject"
-                value={newTemplate.subject}
-                onChange={(e) => setNewTemplate({...newTemplate, subject: e.target.value})}
-                placeholder="Enter email subject"
+                id="newType"
+                value="SMS"
+                disabled
+                className="bg-gray-100"
               />
             </div>
-          )}
+          </div>
 
           <div>
             <Label htmlFor="newMessage">Message</Label>
@@ -367,7 +322,7 @@ const NotificationCenter = () => {
             />
           </div>
 
-          <Button onClick={saveTemplate}>Save Template</Button>
+          <Button onClick={saveTemplate}>Save SMS Template</Button>
         </CardContent>
       </Card>
     </div>
