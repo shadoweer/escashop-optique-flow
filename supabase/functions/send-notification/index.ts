@@ -22,21 +22,20 @@ const supabase = createClient(
 );
 
 async function sendSMS(phone: string, message: string) {
-  const twilioAccountSid = 'ACc276c280eb5088c4234ca3233c0e5ea5';
-  const twilioAuthToken = 'c8c56184f7ad23be869c17c185b0182a';
-  const twilioPhoneNumber = '+14144045399';
+  const clicksendUsername = Deno.env.get('CLICKSEND_USERNAME');
+  const clicksendApiKey = Deno.env.get('CLICKSEND_API_KEY');
 
-  console.log('Attempting to send SMS with the following details:');
+  console.log('Attempting to send SMS with ClickSend:');
   console.log('To:', phone);
-  console.log('From:', twilioPhoneNumber);
   console.log('Message:', message);
-  console.log('Account SID:', twilioAccountSid);
+  console.log('Username configured:', !!clicksendUsername);
+  console.log('API Key configured:', !!clicksendApiKey);
 
-  if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumber) {
-    throw new Error('Twilio credentials not configured');
+  if (!clicksendUsername || !clicksendApiKey) {
+    throw new Error('ClickSend credentials not configured');
   }
 
-  // Ensure phone number is in correct format
+  // Format phone number for Philippines
   let formattedPhone = phone;
   if (phone.startsWith('09')) {
     formattedPhone = '+63' + phone.substring(1);
@@ -48,42 +47,56 @@ async function sendSMS(phone: string, message: string) {
 
   console.log('Formatted phone number:', formattedPhone);
 
-  const auth = btoa(`${twilioAccountSid}:${twilioAuthToken}`);
+  // ClickSend API requires Basic Auth
+  const auth = btoa(`${clicksendUsername}:${clicksendApiKey}`);
   
-  const body = new URLSearchParams({
-    From: twilioPhoneNumber,
-    To: formattedPhone,
-    Body: message,
-  });
+  const smsData = {
+    messages: [
+      {
+        to: formattedPhone,
+        body: message,
+        from: 'EscaOptical'
+      }
+    ]
+  };
 
-  console.log('Sending request to Twilio API...');
+  console.log('Sending request to ClickSend API...');
 
   try {
-    const response = await fetch(
-      `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Basic ${auth}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: body.toString(),
-      }
-    );
+    const response = await fetch('https://rest.clicksend.com/v3/sms/send', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(smsData),
+    });
 
     const responseText = await response.text();
-    console.log('Twilio API Response Status:', response.status);
-    console.log('Twilio API Response:', responseText);
+    console.log('ClickSend API Response Status:', response.status);
+    console.log('ClickSend API Response:', responseText);
 
     if (!response.ok) {
-      console.error('Twilio SMS failed with status:', response.status);
+      console.error('ClickSend SMS failed with status:', response.status);
       console.error('Error response:', responseText);
-      throw new Error(`Twilio SMS failed: ${responseText}`);
+      throw new Error(`ClickSend SMS failed: ${responseText}`);
     }
 
     const result = JSON.parse(responseText);
-    console.log('SMS sent successfully! Message SID:', result.sid);
-    return result;
+    console.log('SMS sent successfully! Response:', result);
+    
+    // Check if the message was accepted
+    if (result.data && result.data.messages && result.data.messages[0]) {
+      const messageResult = result.data.messages[0];
+      if (messageResult.status === 'SUCCESS') {
+        console.log('Message accepted with ID:', messageResult.message_id);
+        return { success: true, messageId: messageResult.message_id, result };
+      } else {
+        throw new Error(`Message failed: ${messageResult.status}`);
+      }
+    }
+    
+    return { success: true, result };
   } catch (error) {
     console.error('Error in sendSMS function:', error);
     throw error;
@@ -129,7 +142,7 @@ const handler = async (req: Request): Promise<Response> => {
           customer_contact: customerPhone,
           token: token,
           wait_time: waitTime,
-          twilio_sid: result.sid
+          clicksend_message_id: result.messageId
         }
       });
 
@@ -143,7 +156,7 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ 
         success: true, 
         result,
-        message: 'SMS notification sent successfully',
+        message: 'SMS notification sent successfully via ClickSend',
         formattedPhone: customerPhone.startsWith('09') ? '+63' + customerPhone.substring(1) : customerPhone
       }),
       {

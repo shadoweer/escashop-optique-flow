@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { MessageSquare, Settings, CheckCircle, AlertCircle, ExternalLink, Phone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const NotificationSetup = () => {
   const { toast } = useToast();
@@ -37,7 +38,7 @@ const NotificationSetup = () => {
 
       console.log('Testing SMS notification:', testData);
       
-      // Call the actual notification function
+      // Call the notification function
       const { data, error } = await supabase.functions.invoke('send-notification', {
         body: testData,
       });
@@ -48,7 +49,7 @@ const NotificationSetup = () => {
 
       toast({
         title: "Test SMS Sent Successfully!",
-        description: `Test SMS notification sent to ${testPhone}. Check your phone.`,
+        description: `Test SMS notification sent to ${testPhone} via ClickSend. Check your phone.`,
       });
     } catch (error) {
       console.error('Test SMS failed:', error);
@@ -68,7 +69,7 @@ const NotificationSetup = () => {
         <h2 className="text-2xl font-bold text-gray-800">SMS Service Setup</h2>
         <Badge variant="outline" className="flex items-center gap-2 text-green-600 border-green-600">
           <CheckCircle className="h-3 w-3" />
-          Twilio Configured
+          ClickSend Configured
         </Badge>
       </div>
 
@@ -76,7 +77,7 @@ const NotificationSetup = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
-            Twilio SMS Configuration
+            ClickSend SMS Configuration
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -84,29 +85,29 @@ const NotificationSetup = () => {
             <div className="flex items-start gap-3">
               <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
               <div>
-                <h4 className="font-medium text-green-900">Twilio API Keys Configured</h4>
+                <h4 className="font-medium text-green-900">ClickSend API Configured</h4>
                 <p className="text-sm text-green-700 mt-1">
-                  Your Twilio credentials have been successfully configured:
+                  Your ClickSend credentials have been successfully configured for international SMS delivery.
                 </p>
                 <ul className="text-sm text-green-700 mt-2 space-y-1">
-                  <li>• Account SID: ACc276c280eb5088c4234ca3233c0e5ea5</li>
-                  <li>• Auth Token: ••••••••••••••••••••••••••••••••</li>
-                  <li>• Phone Number: +14144045399</li>
+                  <li>• Better delivery rates to Philippines</li>
+                  <li>• No trial restrictions</li>
+                  <li>• Reliable international SMS service</li>
                 </ul>
               </div>
             </div>
           </div>
 
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+              <Phone className="h-5 w-5 text-blue-600 mt-0.5" />
               <div>
-                <h4 className="font-medium text-yellow-900">Important Notes for Philippines SMS</h4>
-                <ul className="text-sm text-yellow-700 mt-2 space-y-1">
+                <h4 className="font-medium text-blue-900">Philippine SMS Format</h4>
+                <ul className="text-sm text-blue-700 mt-2 space-y-1">
                   <li>• Use international format: +639XXXXXXXXX</li>
-                  <li>• For trial accounts, verify your phone number in Twilio console</li>
-                  <li>• US numbers may have delivery restrictions to Philippines</li>
-                  <li>• Check Twilio logs if messages don't arrive</li>
+                  <li>• Or local format: 09XXXXXXXXX (auto-converted)</li>
+                  <li>• ClickSend provides better delivery to Philippines</li>
+                  <li>• Messages sent from "EscaOptical"</li>
                 </ul>
               </div>
             </div>
@@ -135,22 +136,22 @@ const NotificationSetup = () => {
             </Button>
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="font-medium mb-2 text-blue-900">SMS Service Status:</h4>
-            <div className="flex items-center gap-2 text-blue-800">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <h4 className="font-medium mb-2 text-green-900">SMS Service Status:</h4>
+            <div className="flex items-center gap-2 text-green-800">
               <CheckCircle className="h-4 w-4" />
-              <span className="text-sm">Ready to send SMS notifications to customers</span>
+              <span className="text-sm">Ready to send SMS notifications via ClickSend</span>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="bg-orange-50 border-orange-200">
+      <Card className="bg-blue-50 border-blue-200">
         <CardContent className="p-4">
-          <div className="flex items-center gap-2 text-orange-800">
-            <Phone className="h-4 w-4" />
+          <div className="flex items-center gap-2 text-blue-800">
+            <ExternalLink className="h-4 w-4" />
             <span className="text-sm font-medium">
-              SMS notifications are configured with Twilio. Test the service above to ensure delivery to Philippine numbers.
+              SMS notifications are now configured with ClickSend for reliable delivery to Philippine numbers.
             </span>
           </div>
         </CardContent>
