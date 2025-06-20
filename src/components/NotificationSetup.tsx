@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Settings, CheckCircle, AlertCircle, ExternalLink, Phone } from 'lucide-react';
+import { MessageSquare, Settings, CheckCircle, AlertCircle, ExternalLink, Phone, Clock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -49,7 +49,7 @@ const NotificationSetup = () => {
 
       toast({
         title: "Test SMS Sent Successfully!",
-        description: `Test SMS notification sent to ${testPhone} via ClickSend. Check your phone.`,
+        description: `Test SMS notification sent to ${testPhone} via ClickSend. Check your phone in 1-5 minutes.`,
       });
     } catch (error) {
       console.error('Test SMS failed:', error);
@@ -113,6 +113,21 @@ const NotificationSetup = () => {
             </div>
           </div>
 
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <Clock className="h-5 w-5 text-amber-600 mt-0.5" />
+              <div>
+                <h4 className="font-medium text-amber-900">SMS Delivery Information</h4>
+                <ul className="text-sm text-amber-700 mt-2 space-y-1">
+                  <li>• SMS delivery typically takes 1-5 minutes</li>
+                  <li>• Check your ClickSend account credits if messages fail</li>
+                  <li>• Ensure recipient phone is powered on and has signal</li>
+                  <li>• Some networks may have slight delays</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
           <div className="space-y-3">
             <div>
               <Label htmlFor="test-phone">Test Phone Number</Label>
@@ -151,7 +166,7 @@ const NotificationSetup = () => {
           <div className="flex items-center gap-2 text-blue-800">
             <ExternalLink className="h-4 w-4" />
             <span className="text-sm font-medium">
-              SMS notifications are now configured with ClickSend for reliable delivery to Philippine numbers.
+              SMS notifications are configured with ClickSend. If you don't receive messages, check your ClickSend account credits and ensure the phone number is correct.
             </span>
           </div>
         </CardContent>

@@ -92,6 +92,7 @@ async function sendSMS(phone: string, message: string) {
         console.log('Message accepted with ID:', messageResult.message_id);
         return { success: true, messageId: messageResult.message_id, result };
       } else {
+        console.error('Message failed with status:', messageResult.status);
         throw new Error(`Message failed: ${messageResult.status}`);
       }
     }
@@ -127,29 +128,33 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Attempting to send SMS...');
     const result = await sendSMS(customerPhone, message);
 
-    // Log the notification in the database
-    console.log('Logging notification to database...');
-    const { error: logError } = await supabase
-      .from('activity_logs')
-      .insert({
-        activity_type: 'notification',
-        customer_id: customerId,
-        description: `SMS notification sent to ${customerName}`,
-        user_name: 'System',
-        user_type: 'system',
-        details: {
-          notification_type: 'sms',
-          customer_contact: customerPhone,
-          token: token,
-          wait_time: waitTime,
-          clicksend_message_id: result.messageId
-        }
-      });
+    // Only log to database if customerId is a valid UUID
+    if (customerId && customerId !== 'test-customer' && customerId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)) {
+      console.log('Logging notification to database...');
+      const { error: logError } = await supabase
+        .from('activity_logs')
+        .insert({
+          activity_type: 'notification',
+          customer_id: customerId,
+          description: `SMS notification sent to ${customerName}`,
+          user_name: 'System',
+          user_type: 'system',
+          details: {
+            notification_type: 'sms',
+            customer_contact: customerPhone,
+            token: token,
+            wait_time: waitTime,
+            clicksend_message_id: result.messageId
+          }
+        });
 
-    if (logError) {
-      console.error('Error logging notification:', logError);
+      if (logError) {
+        console.error('Error logging notification:', logError);
+      } else {
+        console.log('Notification logged successfully');
+      }
     } else {
-      console.log('Notification logged successfully');
+      console.log('Skipping database logging for test notification or invalid customer ID');
     }
 
     return new Response(
@@ -157,7 +162,8 @@ const handler = async (req: Request): Promise<Response> => {
         success: true, 
         result,
         message: 'SMS notification sent successfully via ClickSend',
-        formattedPhone: customerPhone.startsWith('09') ? '+63' + customerPhone.substring(1) : customerPhone
+        formattedPhone: customerPhone.startsWith('09') ? '+63' + customerPhone.substring(1) : customerPhone,
+        deliveryInfo: 'SMS has been queued for delivery. Delivery may take a few minutes depending on network conditions.'
       }),
       {
         status: 200,
@@ -172,7 +178,8 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ 
         success: false, 
         error: error.message,
-        details: 'Check the function logs for more details'
+        details: 'Check the function logs for more details',
+        troubleshooting: 'Common issues: 1) Check phone number format 2) Verify ClickSend account credits 3) SMS delivery can take 1-5 minutes'
       }),
       {
         status: 500,
