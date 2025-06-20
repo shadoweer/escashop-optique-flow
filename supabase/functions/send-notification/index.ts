@@ -55,7 +55,7 @@ async function sendSMS(phone: string, message: string) {
       {
         to: formattedPhone,
         body: message,
-        from: 'Esca Shop Premium Eyewear'
+        from: 'EscaOptical'
       }
     ]
   };
@@ -123,7 +123,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Customer phone number is required for SMS');
     }
     
-    const message = `Hello ${customerName}! Your queue number ${token} at Esca Shop Premium Eyewear is ready. Current wait time: ${Math.floor(waitTime / 60)}:${(waitTime % 60).toString().padStart(2, '0')}. Please arrive soon to maintain your position.`;
+    const message = `Hello ${customerName}! Your queue number ${token} at Esca Optical is ready. Current wait time: ${Math.floor(waitTime / 60)}:${(waitTime % 60).toString().padStart(2, '0')}. Please arrive soon to maintain your position.`;
     
     console.log('Attempting to send SMS...');
     const result = await sendSMS(customerPhone, message);

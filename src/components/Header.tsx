@@ -42,9 +42,9 @@ const Header = ({ activeTab, setActiveTab, userRole }: HeaderProps) => {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <img 
-                src="/lovable-uploads/fc3992ba-920e-4e7e-b17e-1cf44eff1537.png" 
-                alt="Esca Shop Premium Eyewear" 
-                className="h-12 w-12 rounded-full object-cover"
+                src="/lovable-uploads/cbedd510-5670-4550-8b1b-bf1a1a3bf793.png" 
+                alt="Esca Optical" 
+                className="h-10 w-auto"
               />
               <div>
                 <h1 className="text-xl font-bold text-gray-800">
