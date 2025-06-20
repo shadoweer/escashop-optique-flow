@@ -26,9 +26,9 @@ const Index = () => {
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">
             <img 
-              src="/lovable-uploads/cbedd510-5670-4550-8b1b-bf1a1a3bf793.png" 
-              alt="EscaShop Logo" 
-              className="h-20 w-auto object-contain"
+              src="/lovable-uploads/fc3992ba-920e-4e7e-b17e-1cf44eff1537.png" 
+              alt="Esca Shop Premium Eyewear" 
+              className="h-24 w-24 rounded-full object-cover"
             />
           </div>
           <h1 className="text-4xl font-bold text-gray-800 mb-4">
