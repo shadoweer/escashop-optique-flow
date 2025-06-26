@@ -6,7 +6,7 @@ import { Shield, AlertTriangle } from 'lucide-react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: 'admin' | 'staff' | 'viewer';
+  requiredRole?: 'admin' | 'sales_employee' | 'cashier';
 }
 
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
@@ -35,6 +35,15 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   }
 
   if (requiredRole && !hasRole(requiredRole)) {
+    const getRoleDisplayName = (role: string) => {
+      switch (role) {
+        case 'admin': return 'Administrator';
+        case 'sales_employee': return 'Sales Employee';
+        case 'cashier': return 'Cashier';
+        default: return role;
+      }
+    };
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="w-full max-w-md">
@@ -42,10 +51,10 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
             <AlertTriangle className="h-12 w-12 text-red-400 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-gray-800 mb-2">Insufficient Permissions</h2>
             <p className="text-gray-600">
-              You need {requiredRole} role to access this page.
+              You need {getRoleDisplayName(requiredRole)} role to access this page.
             </p>
             <p className="text-sm text-gray-500 mt-2">
-              Current role: {userProfile?.role || 'Unknown'}
+              Current role: {getRoleDisplayName(userProfile?.role || 'Unknown')}
             </p>
           </CardContent>
         </Card>

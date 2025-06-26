@@ -23,16 +23,25 @@ const Header = ({ activeTab, setActiveTab, userRole }: HeaderProps) => {
   };
 
   const navItems = [
-    { id: 'admin', label: 'Admin Dashboard', icon: Home, roles: ['admin', 'staff', 'viewer'] },
+    { id: 'admin', label: 'Admin Dashboard', icon: Home, roles: ['admin', 'sales_employee', 'cashier'] },
     { id: 'users', label: 'Users', icon: UserCheck, roles: ['admin'] },
-    { id: 'notifications-center', label: 'Notification Center', icon: BellRing, roles: ['admin', 'staff'] },
-    { id: 'display', label: 'Display Monitor', icon: Monitor, roles: ['admin', 'staff', 'viewer'] },
-    { id: 'notifications', label: 'Notifications Log', icon: Bell, roles: ['admin', 'staff'] },
-    { id: 'transactions', label: 'Transaction Logs', icon: FileText, roles: ['admin', 'staff'] },
-    { id: 'activity', label: 'Activity Log', icon: Activity, roles: ['admin', 'staff'] },
+    { id: 'notifications-center', label: 'Notification Center', icon: BellRing, roles: ['admin', 'sales_employee'] },
+    { id: 'display', label: 'Display Monitor', icon: Monitor, roles: ['admin', 'sales_employee', 'cashier'] },
+    { id: 'notifications', label: 'Notifications Log', icon: Bell, roles: ['admin', 'sales_employee'] },
+    { id: 'transactions', label: 'Transaction Logs', icon: FileText, roles: ['admin', 'sales_employee'] },
+    { id: 'activity', label: 'Activity Log', icon: Activity, roles: ['admin', 'sales_employee'] },
   ];
 
   const visibleNavItems = navItems.filter(item => item.roles.includes(userRole));
+
+  const getRoleDisplayName = (role: string) => {
+    switch (role) {
+      case 'admin': return '🔧 System Administrator';
+      case 'sales_employee': return '👤 Sales Employee';
+      case 'cashier': return '💰 Cashier';
+      default: return '👁️ User';
+    }
+  };
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
@@ -69,9 +78,7 @@ const Header = ({ activeTab, setActiveTab, userRole }: HeaderProps) => {
           <div className="flex items-center space-x-4">
             <div className="text-right">
               <p className="text-sm font-medium text-gray-800">
-                {userProfile?.role === 'admin' && '🔧 System Administrator'}
-                {userProfile?.role === 'staff' && '👤 Staff'}
-                {userProfile?.role === 'viewer' && '👁️ Viewer'}
+                {getRoleDisplayName(userProfile?.role || '')}
               </p>
               <p className="text-xs text-gray-500">Staff</p>
             </div>

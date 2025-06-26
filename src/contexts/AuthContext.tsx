@@ -8,7 +8,7 @@ interface UserProfile {
   id: string;
   email: string;
   full_name: string;
-  role: 'admin' | 'staff' | 'viewer';
+  role: 'admin' | 'sales_employee' | 'cashier';
   created_at: string;
   updated_at: string;
 }
@@ -21,8 +21,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
   signOut: () => Promise<void>;
-  hasRole: (role: 'admin' | 'staff' | 'viewer') => boolean;
-  createDemoUser: (email: string, password: string, fullName: string, role: 'admin' | 'staff' | 'viewer') => Promise<void>;
+  hasRole: (role: 'admin' | 'sales_employee' | 'cashier') => boolean;
+  createDemoUser: (email: string, password: string, fullName: string, role: 'admin' | 'sales_employee' | 'cashier') => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -99,7 +99,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const createDemoUser = async (email: string, password: string, fullName: string, role: 'admin' | 'staff' | 'viewer') => {
+  const createDemoUser = async (email: string, password: string, fullName: string, role: 'admin' | 'sales_employee' | 'cashier') => {
     try {
       console.log('Creating demo user:', email, role);
       
@@ -167,9 +167,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (email === 'admin@escaoptical.com' && password === 'admin123') {
         await createDemoUser(email, password, 'System Administrator', 'admin');
       } else if (email === 'staff@escaoptical.com' && password === 'staff123') {
-        await createDemoUser(email, password, 'Staff Member', 'staff');
+        await createDemoUser(email, password, 'Sales Employee', 'sales_employee');
       } else if (email === 'viewer@escaoptical.com' && password === 'viewer123') {
-        await createDemoUser(email, password, 'System Viewer', 'viewer');
+        await createDemoUser(email, password, 'Cashier', 'cashier');
       }
       
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -261,17 +261,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const hasRole = (role: 'admin' | 'staff' | 'viewer') => {
+  const hasRole = (role: 'admin' | 'sales_employee' | 'cashier') => {
     if (!userProfile) return false;
     
     // Admin has access to everything
     if (userProfile.role === 'admin') return true;
     
-    // Staff has access to staff and viewer features
-    if (userProfile.role === 'staff' && (role === 'staff' || role === 'viewer')) return true;
+    // Sales employee has access to sales_employee and cashier features
+    if (userProfile.role === 'sales_employee' && (role === 'sales_employee' || role === 'cashier')) return true;
     
-    // Viewer only has access to viewer features
-    if (userProfile.role === 'viewer' && role === 'viewer') return true;
+    // Cashier only has access to cashier features
+    if (userProfile.role === 'cashier' && role === 'cashier') return true;
     
     return false;
   };

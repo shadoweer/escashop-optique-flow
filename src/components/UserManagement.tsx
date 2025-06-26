@@ -17,7 +17,7 @@ interface UserProfile {
   id: string;
   email: string;
   full_name: string;
-  role: 'admin' | 'staff' | 'viewer';
+  role: 'admin' | 'sales_employee' | 'cashier';
   created_at: string;
 }
 
@@ -28,7 +28,7 @@ const UserManagement = () => {
     email: '',
     password: '',
     fullName: '',
-    role: 'staff' as 'admin' | 'staff' | 'viewer'
+    role: 'sales_employee' as 'admin' | 'sales_employee' | 'cashier'
   });
   const [isCreating, setIsCreating] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -60,7 +60,7 @@ const UserManagement = () => {
     }
   };
 
-  const updateUserRole = async (userId: string, newRole: 'admin' | 'staff' | 'viewer') => {
+  const updateUserRole = async (userId: string, newRole: 'admin' | 'sales_employee' | 'cashier') => {
     try {
       // Update profiles table
       const { error: profileError } = await supabase
@@ -123,7 +123,7 @@ const UserManagement = () => {
         description: "User created successfully!"
       });
 
-      setNewUser({ email: '', password: '', fullName: '', role: 'staff' });
+      setNewUser({ email: '', password: '', fullName: '', role: 'sales_employee' });
       setDialogOpen(false);
       fetchUsers();
     } catch (error: any) {
@@ -141,9 +141,18 @@ const UserManagement = () => {
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
       case 'admin': return 'destructive';
-      case 'staff': return 'default';
-      case 'viewer': return 'secondary';
+      case 'sales_employee': return 'default';
+      case 'cashier': return 'secondary';
       default: return 'outline';
+    }
+  };
+
+  const getRoleDisplayName = (role: string) => {
+    switch (role) {
+      case 'admin': return 'Admin';
+      case 'sales_employee': return 'Sales Employee';
+      case 'cashier': return 'Cashier';
+      default: return role;
     }
   };
 
@@ -210,14 +219,14 @@ const UserManagement = () => {
               </div>
               <div>
                 <Label htmlFor="role">Role</Label>
-                <Select value={newUser.role} onValueChange={(value: 'admin' | 'staff' | 'viewer') => setNewUser({ ...newUser, role: value })}>
+                <Select value={newUser.role} onValueChange={(value: 'admin' | 'sales_employee' | 'cashier') => setNewUser({ ...newUser, role: value })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="staff">Staff</SelectItem>
-                    <SelectItem value="viewer">Viewer</SelectItem>
+                    <SelectItem value="sales_employee">Sales Employee</SelectItem>
+                    <SelectItem value="cashier">Cashier</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -263,7 +272,7 @@ const UserManagement = () => {
                     </TableCell>
                     <TableCell>
                       <Badge variant={getRoleBadgeVariant(user.role)}>
-                        {user.role.toUpperCase()}
+                        {getRoleDisplayName(user.role)}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -272,17 +281,17 @@ const UserManagement = () => {
                     <TableCell>
                       <Select
                         value={user.role}
-                        onValueChange={(newRole: 'admin' | 'staff' | 'viewer') => 
+                        onValueChange={(newRole: 'admin' | 'sales_employee' | 'cashier') => 
                           updateUserRole(user.id, newRole)
                         }
                       >
-                        <SelectTrigger className="w-32">
+                        <SelectTrigger className="w-40">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="admin">Admin</SelectItem>
-                          <SelectItem value="staff">Staff</SelectItem>
-                          <SelectItem value="viewer">Viewer</SelectItem>
+                          <SelectItem value="sales_employee">Sales Employee</SelectItem>
+                          <SelectItem value="cashier">Cashier</SelectItem>
                         </SelectContent>
                       </Select>
                     </TableCell>
@@ -307,16 +316,16 @@ const UserManagement = () => {
               <p className="text-xs text-gray-500 mt-2">Full system access</p>
             </div>
             <div className="bg-white p-4 rounded-lg border">
-              <h4 className="font-semibold text-blue-600 mb-2">👥 Staff Account</h4>
+              <h4 className="font-semibold text-blue-600 mb-2">👥 Sales Employee</h4>
               <p className="text-sm"><strong>Email:</strong> staff@escaoptical.com</p>
               <p className="text-sm"><strong>Password:</strong> staff123</p>
               <p className="text-xs text-gray-500 mt-2">Customer & queue management</p>
             </div>
             <div className="bg-white p-4 rounded-lg border">
-              <h4 className="font-semibold text-green-600 mb-2">👁️ Viewer Account</h4>
+              <h4 className="font-semibold text-green-600 mb-2">💰 Cashier Account</h4>
               <p className="text-sm"><strong>Email:</strong> viewer@escaoptical.com</p>
               <p className="text-sm"><strong>Password:</strong> viewer123</p>
-              <p className="text-xs text-gray-500 mt-2">Read-only access</p>
+              <p className="text-xs text-gray-500 mt-2">Transaction processing</p>
             </div>
           </div>
         </CardContent>

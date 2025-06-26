@@ -17,9 +17,9 @@ const UserProfile = () => {
     switch (role) {
       case 'admin':
         return 'destructive';
-      case 'staff':
+      case 'sales_employee':
         return 'default';
-      case 'viewer':
+      case 'cashier':
         return 'secondary';
       default:
         return 'outline';
@@ -30,12 +30,25 @@ const UserProfile = () => {
     switch (role) {
       case 'admin':
         return 'Full system access and user management';
-      case 'staff':
-        return 'Customer management and queue operations';
-      case 'viewer':
-        return 'Read-only access to system data';
+      case 'sales_employee':
+        return 'Customer management and sales operations';
+      case 'cashier':
+        return 'Transaction processing and payment handling';
       default:
         return 'Unknown role';
+    }
+  };
+
+  const getRoleDisplayName = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return 'ADMIN';
+      case 'sales_employee':
+        return 'SALES EMPLOYEE';
+      case 'cashier':
+        return 'CASHIER';
+      default:
+        return role.toUpperCase();
     }
   };
 
@@ -70,7 +83,7 @@ const UserProfile = () => {
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <Badge variant={getRoleBadgeVariant(userProfile.role)}>
-                  {userProfile.role.toUpperCase()}
+                  {getRoleDisplayName(userProfile.role)}
                 </Badge>
               </div>
               <p className="text-sm text-gray-500 mt-1">
