@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,10 +41,10 @@ const Auth = () => {
     try {
       console.log('Setting up demo accounts...');
       
-      // Create all demo accounts
+      // Create all demo accounts with updated role names
       await createDemoUser('admin@escaoptical.com', 'admin123', 'System Administrator', 'admin');
-      await createDemoUser('staff@escaoptical.com', 'staff123', 'Staff Member', 'staff');
-      await createDemoUser('viewer@escaoptical.com', 'viewer123', 'System Viewer', 'viewer');
+      await createDemoUser('staff@escaoptical.com', 'staff123', 'Sales Employee', 'sales_employee');
+      await createDemoUser('viewer@escaoptical.com', 'viewer123', 'Cashier', 'cashier');
       
       console.log('Demo accounts created successfully');
       setError(null);
